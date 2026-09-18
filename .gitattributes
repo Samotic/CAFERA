@@ -1,0 +1,23 @@
+# Normalise line endings in the repository to LF regardless of the platform a
+# contributor is on. Without this, a Windows checkout commits CRLF and every
+# subsequent diff on Linux or macOS shows the whole file as changed.
+* text=auto eol=lf
+
+# Shell scripts and git hooks must be LF even on Windows — CRLF breaks the
+# shebang line and the hook silently fails to run.
+*.sh text eol=lf
+.husky/* text eol=lf
+
+# Binary assets: never transformed, never diffed as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+
+# Generated files: collapsed in pull-request diffs so review stays readable.
+package-lock.json linguist-generated=true -diff

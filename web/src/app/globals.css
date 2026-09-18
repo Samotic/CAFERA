@@ -1,0 +1,482 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   CAFERA design system
+   --------------------------------------------------------------------------
+   Two layers, in this order:
+
+   1. BRAND PALETTE — the literal colours of the identity. Fixed, never themed.
+   2. SEMANTIC TOKENS — what a colour *means* here (page, card, primary text,
+      accent). Components only ever reference this layer, which is why a theme
+      switch is a token change and not a component rewrite.
+
+   Colour pairs are written with `light-dark()`, so a single declaration covers
+   both themes. `color-scheme` below decides which half applies, which also
+   gives us correctly themed form controls and scrollbars for free.
+
+   Accessibility note: the raw brand Caramel (#C68B59) is 2.71:1 on cream and
+   is therefore *never* used for text or for a meaningful boundary. Text-safe
+   variants (`--color-accent-text`, `--color-accent-line`) are derived from it
+   and are verified at 4.5:1 and 3:1 against every surface they sit on.
+   ========================================================================== */
+
+@custom-variant dark {
+  &:where([data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:not([data-theme='light']):not([data-theme='light'] *)) {
+      @slot;
+    }
+  }
+}
+
+:root {
+  /* Follow the OS unless a stored preference has pinned the theme. The inline
+     script in layout.tsx sets data-theme before first paint. */
+  color-scheme: light dark;
+
+  /* ---- 1. Brand palette (literal, unthemed) ---- */
+  --brand-espresso: #3b241d;
+  --brand-coffee: #6f4e37;
+  --brand-caramel: #c68b59;
+  --brand-latte: #f3e9dc;
+  --brand-warm-white: #faf7f2;
+  --brand-ink: #201a17;
+  --brand-muted: #8b7d74;
+
+  /* ---- 2. Semantic tokens ---- */
+
+  /* Surfaces, from furthest back to nearest front. */
+  --color-page: light-dark(#faf7f2, #171009);
+  --color-card: light-dark(#fffcf7, #241812);
+  --color-sunken: light-dark(#f3e9dc, #2e1e17);
+  --color-raised: light-dark(#ffffff, #3b241d);
+  --color-inverse: light-dark(#3b241d, #f3e9dc);
+  --color-on-inverse: light-dark(#faf7f2, #201a17);
+
+  /* Text. Every value below is >= 4.5:1 on page, card and sunken alike. */
+  --color-text: light-dark(#201a17, #f3e9dc);
+  --color-text-secondary: light-dark(#6f4e37, #c7b5a6);
+  --color-text-muted: light-dark(#736860, #9a8e86);
+
+  /* Accent. `accent` is the decorative fill; `accent-text` is the legible one. */
+  --color-accent: light-dark(#c68b59, #c68b59);
+  --color-accent-text: light-dark(#8b613e, #d9a978);
+  --color-accent-line: light-dark(#ae7a4e, #c68b59);
+  --color-accent-soft: light-dark(#f6ead9, #3a2618);
+
+  /* Primary action. Espresso on cream, caramel on dark. */
+  --color-primary: light-dark(#3b241d, #c68b59);
+  --color-primary-hover: light-dark(#4c2f26, #d49a6c);
+  --color-on-primary: light-dark(#faf7f2, #201a17);
+
+  /* Borders. Hairlines are decorative; `border-strong` is the 3:1 UI boundary. */
+  --color-border: light-dark(#e8dbc9, #3a2b22);
+  --color-border-strong: light-dark(#b9a795, #6b5548);
+
+  /* Status. Warm-shifted so they sit inside the palette rather than beside it. */
+  --color-success: light-dark(#3f6b47, #8fc79a);
+  --color-danger: light-dark(#a33a2d, #f0917f);
+  --color-danger-soft: light-dark(#fbeae6, #3a1c16);
+  --color-warning: light-dark(#8a5a12, #e3b05c);
+
+  /* Focus ring. High contrast against both cream and espresso. */
+  --color-focus: light-dark(#8b613e, #e8c39a);
+
+  /* ---- Elevation: warm-tinted, never neutral black ---- */
+  --shadow-xs: 0 1px 2px rgb(59 36 29 / 0.06);
+  --shadow-sm: 0 1px 3px rgb(59 36 29 / 0.07), 0 1px 2px rgb(59 36 29 / 0.04);
+  --shadow-md: 0 4px 12px rgb(59 36 29 / 0.08), 0 2px 4px rgb(59 36 29 / 0.04);
+  --shadow-lg: 0 12px 28px rgb(59 36 29 / 0.11), 0 4px 10px rgb(59 36 29 / 0.05);
+  --shadow-xl: 0 24px 56px rgb(59 36 29 / 0.16), 0 8px 20px rgb(59 36 29 / 0.07);
+
+  /* ---- Geometry ---- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-card: 20px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* ---- Motion. Short enough to feel instant, long enough to read. ---- */
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 300ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ---- Layout ---- */
+  --content-max: 1280px;
+  --header-height: 4rem;
+  --bottom-nav-height: 4.25rem;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   Tailwind token bridge
+   `inline` keeps the var() reference in the generated CSS, so `bg-page`
+   resolves at runtime and follows the theme instead of being frozen at build.
+   ========================================================================== */
+@theme inline {
+  --color-page: var(--color-page);
+  --color-card: var(--color-card);
+  --color-sunken: var(--color-sunken);
+  --color-raised: var(--color-raised);
+  --color-inverse: var(--color-inverse);
+  --color-on-inverse: var(--color-on-inverse);
+
+  --color-text: var(--color-text);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+
+  --color-accent: var(--color-accent);
+  --color-accent-text: var(--color-accent-text);
+  --color-accent-line: var(--color-accent-line);
+  --color-accent-soft: var(--color-accent-soft);
+
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-on-primary: var(--color-on-primary);
+
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+
+  --color-success: var(--color-success);
+  --color-danger: var(--color-danger);
+  --color-danger-soft: var(--color-danger-soft);
+  --color-warning: var(--color-warning);
+  --color-focus: var(--color-focus);
+
+  --color-espresso: var(--brand-espresso);
+  --color-coffee: var(--brand-coffee);
+  --color-caramel: var(--brand-caramel);
+  --color-latte: var(--brand-latte);
+
+  --font-display: var(--font-fraunces), ui-serif, Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-card: var(--radius-card);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+
+  /* Fluid display sizes. clamp() keeps headings proportionate from 320px to
+     ultrawide without a stack of breakpoint overrides. */
+  --text-display-sm: clamp(1.75rem, 1.4rem + 1.6vw, 2.25rem);
+  --text-display-md: clamp(2.125rem, 1.6rem + 2.4vw, 3rem);
+  --text-display-lg: clamp(2.5rem, 1.7rem + 3.6vw, 4rem);
+
+  --container-content: var(--content-max);
+}
+
+/* ==========================================================================
+   Base layer
+   ========================================================================== */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* Opt back into Next's scroll override so route changes land at the top
+       instantly while in-page anchors still glide. */
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* One visible focus treatment for the entire product. Keyboard users get a
+     ring everywhere; pointer users are not punished with one on every click. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--brand-ink);
+  }
+
+  /* Images never stretch, and they reserve their box so nothing shifts. */
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Honour the OS setting, and the in-app override that mirrors it onto
+     <html data-reduced-motion="true">. Motion is decoration; content is not. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  [data-reduced-motion='true'] *,
+  [data-reduced-motion='true'] *::before,
+  [data-reduced-motion='true'] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+@layer utilities {
+  /* Visible only to screen readers — used for headings that structure a page
+     whose visual design does not need to show them. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* The skip link: off-screen until focused, then pinned to the top-left. */
+  .skip-link:focus {
+    position: fixed;
+    inset-block-start: 0.75rem;
+    inset-inline-start: 0.75rem;
+    z-index: 100;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0.75rem 1.25rem;
+    clip-path: none;
+    overflow: visible;
+    background-color: var(--color-inverse);
+    color: var(--color-on-inverse);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .content-container {
+    width: 100%;
+    max-width: var(--content-max);
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .content-container {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .content-container {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Bottom tab bar clearance on notched phones. */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Horizontal rails: snap on touch, no scrollbar chrome, keyboard reachable. */
+  .scroll-rail {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .scroll-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scroll-rail > * {
+    scroll-snap-align: start;
+    flex: none;
+  }
+
+  /* Cheap, GPU-friendly shimmer for skeletons. Transform only. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-sunken);
+  }
+
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--color-card) 70%, transparent),
+      transparent
+    );
+    animation: cafera-shimmer 1.6s infinite;
+  }
+
+  @keyframes cafera-shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
+
+/* ==========================================================================
+   Named keyframes
+   Every one animates transform and opacity only, so they run on the compositor
+   and never trigger layout. `prefers-reduced-motion` neutralises them via the
+   global rule in the base layer.
+   ========================================================================== */
+@keyframes cafera-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cafera-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes cafera-sheet-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes cafera-sheet-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes cafera-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The splash/brand intro: steam drifting up from the cup. */
+@keyframes cafera-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scaleX(0.9);
+  }
+  35% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scaleX(1.15);
+  }
+}
+
+@keyframes cafera-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
