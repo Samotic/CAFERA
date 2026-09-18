@@ -285,11 +285,18 @@ messages are never rendered.
 | My Café        | `/my-cafe/recently-viewed` `/my-cafe/history` `/my-cafe/want-to-try`                                                               |
 | Custom recipes | Full CRUD under `/custom-recipes`                                                                                                  |
 | AI             | `POST /ai/ask` (feature-flagged)                                                                                                   |
-| Ops            | `GET /health`                                                                                                                      |
+| Ops            | `GET /health/live` · `GET /health/ready` · `GET /health` _(deprecated alias)_                                                      |
 
-`GET /api/health` reports the database as well as the process, and returns **503**
-when the database is unreachable — a service answering HTTP in front of a dead
-database is down from every user's point of view, and a monitor needs to see that.
+`GET /api/health/ready` checks every dependency and returns **503** when one is
+unreachable — a service answering HTTP in front of a dead database is down from
+every user's point of view, and a monitor needs to see that.
+
+`GET /api/health/live` answers a different question: "is this process alive?" It
+never touches a dependency, and always returns 200. Container platforms restart a
+process whose liveness probe fails, so a liveness check that consults the database
+turns a transient Atlas failover into a restart loop. See
+[Health probes](#health-probes--wire-these-to-the-right-urls) for which probe
+points where.
 
 ---
 
@@ -429,6 +436,28 @@ competing pools. Measured locally: cold connect **45 ms**, cached connect
 > **TTFB baseline: not yet measured.** The four-number breakdown (edge TTFB,
 > Next render, Express handler, Atlas query) requires a real deploy and has not
 > been taken. See [Build status](#build-status).
+
+### Health probes — wire these to the right URLs
+
+This is the part that gets lost, and getting it wrong causes outages rather than
+merely being untidy.
+
+| Probe                       | URL                 | Behaviour                                   |
+| --------------------------- | ------------------- | ------------------------------------------- |
+| Platform **liveness** probe | `/api/health/live`  | Always 200 while the process runs           |
+| Load-balancer traffic gate  | `/api/health/ready` | 200 when dependencies are up, 503 when not  |
+| External **uptime monitor** | `/api/health/ready` | Alerts on a real inability to serve         |
+| _(deprecated)_              | `/api/health`       | Alias of `/ready`, kept for existing probes |
+
+> **The liveness probe must not check the database.** Container platforms kill
+> and restart a process whose liveness probe fails. If that probe checks Atlas, a
+> transient failover — an event Atlas is designed to ride out — restarts a healthy
+> process, drops every in-flight request, and turns a five-second hiccup into a
+> real outage with a cold start on the end. `/live` never touches a dependency,
+> and a test asserts it stays that way.
+
+Verified against the running API: with the database down, `/live` returns 200 and
+`/ready` returns 503.
 
 **Release checklist.** Real `NEXT_PUBLIC_API_URL` (a localhost value ships a site
 that cannot load data — the bundle scanner fails the build on one) · custom domain
