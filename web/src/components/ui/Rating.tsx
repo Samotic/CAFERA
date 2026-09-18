@@ -36,9 +36,13 @@ export function RatingDisplay({
             <Star key={index} className={starSize} fill="currentColor" strokeWidth={0} />
           ))}
         </span>
-        {/* The filled layer is clipped to the exact percentage, so 4.3 looks like 4.3. */}
+        {/* `accent-line`, not `accent`. The raw brand caramel measures 2.83:1 on a
+            card — below the 3:1 that WCAG 1.4.11 asks of a meaningful graphic.
+            `accent-line` is the variant solved for exactly this and reads the same.
+
+            The filled layer is clipped to the exact percentage, so 4.3 looks like 4.3. */}
         <span
-          className="text-accent absolute inset-0 inline-flex gap-0.5 overflow-hidden"
+          className="text-accent-line absolute inset-0 inline-flex gap-0.5 overflow-hidden"
           style={{ width: `${percent}%` }}
         >
           {Array.from({ length: REVIEW_MAX_RATING }, (_, index) => (
@@ -108,7 +112,9 @@ export function RatingInput({
               className={cn(
                 'cursor-pointer rounded p-1 transition-transform duration-150',
                 'hover:scale-110 motion-reduce:hover:scale-100',
-                'focus-within:outline-focus focus-within:outline-2 focus-within:outline-offset-2',
+                /* The radio itself is sr-only, so the ring is drawn on this label instead.
+                   Same two-tone treatment as every other focusable thing. */
+                'focus-ring-within',
                 disabled && 'cursor-not-allowed opacity-60',
               )}
             >
@@ -123,7 +129,7 @@ export function RatingInput({
               />
               <Star
                 aria-hidden
-                className={cn('size-7', isFilled ? 'text-accent' : 'text-border-strong')}
+                className={cn('size-7', isFilled ? 'text-accent-line' : 'text-border-strong')}
                 fill={isFilled ? 'currentColor' : 'none'}
                 strokeWidth={isFilled ? 0 : 1.5}
               />

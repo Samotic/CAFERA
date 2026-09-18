@@ -12,10 +12,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="bg-page flex min-h-dvh flex-col">
       <header className="content-container flex h-20 items-center">
-        <Link
-          href="/"
-          className="focus-visible:outline-focus rounded-md focus-visible:outline-2 focus-visible:outline-offset-4"
-        >
+        <Link href="/" className="rounded-md">
           <Logo size="sm" />
         </Link>
       </header>

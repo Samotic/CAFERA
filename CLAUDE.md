@@ -55,12 +55,34 @@ The raw brand palette does not meet AA on its own, and this is measured, not
 assumed. Against the cream backgrounds: **Caramel `#C68B59` is 2.71:1** and
 **Muted `#8B7D74` is 3.72:1** — both fail for body text. So:
 
-- `--color-accent` is the decorative caramel fill. **Never use it for text.**
-- `--color-accent-text` (`#8B613E`) is the legible one — 4.5:1+ on every surface.
-- `--color-accent-line` (`#AE7A4E`) is the 3:1 UI-boundary variant.
+- `--color-accent` is the decorative caramel **fill**. **Never use it for text,
+  and never for a meaningful graphic** — it measures 2.83:1 on a card, which is
+  below the 3:1 that WCAG 1.4.11 asks of one.
+- `--color-accent-text` (`#8B613E` / `#D9A978`) is the legible one — 4.5:1+.
+- `--color-accent-line` (`#AE7A4E` / `#C68B59`) is the 3:1 UI-boundary variant.
+  Use it for borders, indicators and graphics like the rating stars.
 
-If you add a colour, verify it against `page`, `card` **and** `sunken` before
-committing. The existing values were solved for, not eyeballed.
+**`npm test -w web` runs the full audit** (`src/theme/contrast.test.ts`). It reads
+the real `globals.css`, so it measures what ships, and it covers **both halves of
+every `light-dark()` pair**. Adding a new colour pairing to the UI means adding a
+row to its table.
+
+### The focus ring is two-tone, and not themed
+
+`--color-focus` (espresso) is banded by `--color-focus-halo` (latte), drawn by a
+single `:focus-visible` rule in `globals.css`.
+
+**Components must never declare their own focus outline.** A local
+`focus-visible:outline-*` utility outranks the base rule and silently drops the
+halo — which is the half that makes the ring visible on dark surfaces.
+
+The reason it is two tones: a focus ring can land on anything, and no single
+colour clears 3:1 against every surface. Measured failures from the attempts that
+came first — a themed pair gave 2.66:1 light / 1.38:1 dark on the inverse
+surface, and a single caramel gave **1.44:1 on the dark-theme primary button**, so
+tabbing onto the main call to action showed no ring at all. Scanned across the
+entire luminance range, espresso-banded-by-latte always leaves one tone at
+**≥3.48:1**.
 
 ## Security invariants
 

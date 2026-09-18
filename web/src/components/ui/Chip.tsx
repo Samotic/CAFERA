@@ -19,9 +19,9 @@ const CHIP_BASE =
   'inline-flex items-center gap-1.5 rounded-pill px-3.5 py-2 text-sm whitespace-nowrap ' +
   'transition-colors duration-150 ease-out';
 
-const CHIP_INTERACTIVE =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ' +
-  'min-h-11 sm:min-h-10';
+/* Touch-target floor. The focus ring is global (see globals.css) and must not
+   be re-declared here — a local outline utility outranks it and drops the halo. */
+const CHIP_INTERACTIVE = 'min-h-11 sm:min-h-10';
 
 export function InfoChip({
   icon: Icon,

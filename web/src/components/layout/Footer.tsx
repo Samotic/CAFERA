@@ -36,7 +36,7 @@ export function Footer() {
                 <li key={category.slug}>
                   <Link
                     href={`/discover?category=${category.slug}`}
-                    className="text-text-muted hover:text-accent-text focus-visible:outline-focus rounded text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="text-text-muted hover:text-accent-text rounded text-sm"
                   >
                     {category.label}
                   </Link>
@@ -54,7 +54,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-text-muted hover:text-accent-text focus-visible:outline-focus rounded text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="text-text-muted hover:text-accent-text rounded text-sm"
                   >
                     {link.label}
                   </Link>

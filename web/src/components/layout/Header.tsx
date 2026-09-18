@@ -30,10 +30,7 @@ export function Header() {
         )}
       >
         <div className="content-container flex h-16 items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="focus-visible:outline-focus rounded-md focus-visible:outline-2 focus-visible:outline-offset-4"
-          >
+          <Link href="/" className="rounded-md">
             <Logo size="sm" />
           </Link>
 
@@ -49,7 +46,7 @@ export function Header() {
                       aria-current={isActive ? 'page' : undefined}
                       className={cn(
                         'relative inline-flex h-11 items-center rounded-md px-4 text-[0.9375rem] transition-colors duration-150',
-                        'focus-visible:outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
+                        '',
                         isActive
                           ? 'text-accent-text font-semibold'
                           : 'text-text-secondary hover:text-text hover:bg-sunken font-medium',

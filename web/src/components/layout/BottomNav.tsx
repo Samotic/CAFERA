@@ -40,7 +40,7 @@ export function BottomNav() {
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   'relative flex min-h-[3.5rem] flex-col items-center justify-center gap-1 px-1 py-2',
-                  'focus-visible:outline-focus transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2',
+                  'transition-colors duration-150',
                   isActive ? 'text-accent-text' : 'text-text-muted hover:text-text',
                 )}
               >

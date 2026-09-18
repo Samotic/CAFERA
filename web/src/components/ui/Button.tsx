@@ -19,7 +19,7 @@ const BASE =
   'relative inline-flex items-center justify-center gap-2 rounded-pill font-medium ' +
   'transition-[background-color,color,border-color,box-shadow,transform] duration-150 ' +
   'ease-out select-none whitespace-nowrap ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ' +
+  ' ' +
   'active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55 ' +
   'motion-reduce:active:scale-100 motion-reduce:transition-none';
 
@@ -146,7 +146,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       title={label}
       className={cn(
         'inline-flex items-center justify-center rounded-full transition-all duration-150',
-        'focus-visible:outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
+        '',
         'active:scale-95 disabled:pointer-events-none disabled:opacity-50 motion-reduce:active:scale-100',
         /* 44px minimum touch target, even when the glyph inside is 20px. */
         size === 'md' ? 'size-11' : 'size-9',

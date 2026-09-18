@@ -177,7 +177,7 @@ function ToastViewport({
                     item.action?.onClick();
                     onDismiss(item.id);
                   }}
-                  className="text-accent-text focus-visible:outline-focus mt-1.5 font-semibold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="text-accent-text mt-1.5 font-semibold underline underline-offset-2"
                 >
                   {item.action.label}
                 </button>
@@ -187,7 +187,7 @@ function ToastViewport({
               type="button"
               onClick={() => onDismiss(item.id)}
               aria-label="Dismiss notification"
-              className="text-text-muted hover:text-text focus-visible:outline-focus -m-1 shrink-0 rounded p-1 focus-visible:outline-2"
+              className="text-text-muted hover:text-text -m-1 shrink-0 rounded p-1"
             >
               <X aria-hidden className="size-4" />
             </button>

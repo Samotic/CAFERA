@@ -49,7 +49,7 @@ export function CardLink({ variant = 'raised', className, ...props }: CardLinkPr
       className={cn(
         'rounded-card group/card relative block overflow-hidden transition-all duration-200 ease-out',
         'hover:-translate-y-0.5 hover:shadow-lg',
-        'focus-visible:outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
+        '',
         'motion-reduce:transform-none motion-reduce:transition-none',
         CARD_VARIANTS[variant],
         className,

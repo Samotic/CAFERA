@@ -82,7 +82,7 @@ export function Field({
 const INPUT_BASE =
   'w-full rounded-md border bg-card px-3.5 text-[0.9375rem] text-text ' +
   'placeholder:text-text-muted transition-colors duration-150 ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus ' +
+  ' ' +
   'disabled:cursor-not-allowed disabled:opacity-60 ' +
   /* 44px tall: comfortably above the minimum touch target. */
   'h-11';
@@ -151,7 +151,7 @@ export function Checkbox({
         type="checkbox"
         className={cn(
           'accent-accent-line border-border-strong mt-0.5 size-5 shrink-0 cursor-pointer rounded',
-          'focus-visible:outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
+          '',
         )}
         {...props}
       />

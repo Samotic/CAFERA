@@ -64,7 +64,7 @@ export default function HomePage() {
             their own URL state. */}
         <Link
           href="/discover"
-          className="border-border-strong bg-card text-text-muted hover:border-accent-line focus-visible:outline-focus flex h-14 w-full items-center gap-3 rounded-full border px-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="border-border-strong bg-card text-text-muted hover:border-accent-line flex h-14 w-full items-center gap-3 rounded-full border px-5 transition-colors"
         >
           <Search aria-hidden className="size-5 shrink-0" />
           <span className="text-[0.9375rem]">Search coffee, ingredients…</span>

@@ -71,9 +71,12 @@
   --color-primary-hover: light-dark(#4c2f26, #d49a6c);
   --color-on-primary: light-dark(#faf7f2, #201a17);
 
-  /* Borders. Hairlines are decorative; `border-strong` is the 3:1 UI boundary. */
+  /* Borders. Hairlines are decorative; `border-strong` is the 3:1 UI boundary —
+     it draws input and control edges, so WCAG 1.4.11 applies and both halves are
+     solved for >= 3:1 against every surface they sit on. The original values
+     (#B9A795 / #6B5548) measured 2.18 and 2.49 and were not usable. */
   --color-border: light-dark(#e8dbc9, #3a2b22);
-  --color-border-strong: light-dark(#b9a795, #6b5548);
+  --color-border-strong: light-dark(#928476, #816f63);
 
   /* Status. Warm-shifted so they sit inside the palette rather than beside it. */
   --color-success: light-dark(#3f6b47, #8fc79a);
@@ -81,8 +84,24 @@
   --color-danger-soft: light-dark(#fbeae6, #3a1c16);
   --color-warning: light-dark(#8a5a12, #e3b05c);
 
-  /* Focus ring. High contrast against both cream and espresso. */
-  --color-focus: light-dark(#8b613e, #e8c39a);
+  /* Focus ring — TWO tones, and neither is themed.
+
+     A focus indicator must clear 3:1 against whatever it lands on, and it can
+     land on anything: a cream card, an espresso inverse surface, the caramel
+     primary button, a photograph. No single colour can do that. Measured
+     failures from the single-colour attempts:
+       themed pair   2.66:1 light / 1.38:1 dark on the inverse surface
+       one caramel   1.44:1 on the dark-theme primary button — tabbing onto the
+                     main call to action showed no ring at all
+
+     So the ring is drawn as espresso banded by latte. Scanned across the entire
+     luminance range, at least one of the two always clears **3.48:1**, and
+     against every surface CAFERA actually has, at least one clears 4.97:1. The
+     two are 12:1 apart from each other, so the band is always legible as a band.
+
+     Both are brand colours, so the ring still looks like CAFERA. */
+  --color-focus: #3b241d;
+  --color-focus-halo: #f3e9dc;
 
   /* ---- Elevation: warm-tinted, never neutral black ---- */
   --shadow-xs: 0 1px 2px rgb(59 36 29 / 0.06);
@@ -233,12 +252,22 @@
     text-wrap: pretty;
   }
 
-  /* One visible focus treatment for the entire product. Keyboard users get a
-     ring everywhere; pointer users are not punished with one on every click. */
+  /* ONE focus treatment for the entire product.
+     Components must not declare their own — a local `outline-color` utility has
+     higher specificity than this rule and would silently drop the halo, which is
+     the half that makes the ring visible on dark surfaces.
+
+     Geometry: the halo spreads 0-6px from the border box; the outline sits on
+     top of it at 2-4px. The result is latte / espresso / latte, so whichever
+     tone the surface swallows, the other one still reads.
+
+     No `border-radius` here. An earlier version set one, which reshaped every
+     focused element — a pill button briefly became a rounded rectangle. The
+     outline follows the element's own radius on its own. */
   :focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
-    border-radius: var(--radius-sm);
+    box-shadow: 0 0 0 6px var(--color-focus-halo);
   }
 
   :focus:not(:focus-visible) {
@@ -294,6 +323,15 @@
    Utilities
    ========================================================================== */
 @layer utilities {
+  /* For controls whose real input is visually hidden — the star rating's radio
+     buttons live inside their labels — so the ring can be drawn on the wrapper
+     that is actually visible. Same two tones, same guarantee. */
+  .focus-ring-within:has(:focus-visible) {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px var(--color-focus-halo);
+  }
+
   /* Visible only to screen readers — used for headings that structure a page
      whose visual design does not need to show them. */
   .sr-only {
