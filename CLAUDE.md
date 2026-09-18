@@ -108,9 +108,53 @@ These are not style preferences. Breaking one is a vulnerability:
   `@rolldown/binding-win32-x64-msvc` at the version matching `rolldown` — an npm
   optional-dependency bug, not a project one.
 
+## Decisions that must not be silently reversed
+
+Each of these is a deliberate trade with a non-obvious failure mode. Each is
+protected by a test that will fail if it is undone. If you are about to change
+one, read the reasoning first — the change will look like an improvement.
+
+### 1. Nonce-bearing HTML is never shared-cached
+
+CAFERA serves a nonce-based CSP with no `unsafe-inline` on `script-src`. A nonce
+is only a control while it is unique per response, so:
+
+- HTML is generated per request. **No literal ISR or `generateStaticParams` on
+  recipe pages** while this policy stands. ISR's intent lives one layer down —
+  recipe reads are cached and tag-invalidated.
+- Document responses carry `private, no-store, must-revalidate`, applied
+  unconditionally in `proxy.ts`, never opted into per route.
+- **Never add `s-maxage`, `public` or `stale-while-revalidate` to a document
+  response.** The CDN would cache the nonce with the HTML and serve one nonce to
+  thousands of visitors. Nothing breaks, the header still looks right, and the
+  policy becomes worth roughly `unsafe-inline`.
+
+If static HTML is wanted later, the correct trade is a **hash-based CSP** for the
+known inline scripts — not caching the nonce.
+
+Guarded by `web/src/proxy.test.ts`. Assets, JSON and images are unaffected and
+should stay aggressively cacheable; they are excluded by `config.matcher`.
+
+### 2. `isDocumentRequest` fails closed
+
+A client that sends no `Sec-Fetch-Dest` gets the CSP anyway. An earlier version
+treated "cannot tell" as "not a document", and curl received no policy at all —
+a security header a request can opt out of by saying less is not a security
+header. Only positively identified non-documents (RSC payloads, `sec-fetch-dest`
+of `image`/`script`/etc.) are skipped.
+
+### 3. Control characters are matched with `\p{Cc}`, never a literal range
+
+`shared/src/schemas/common.ts` uses the Unicode property escape. An explicit
+`�-` range put **real control bytes, including NUL, into the source
+file** — invisible in a diff, surviving copy-paste, and caught only when
+something happened to lint that file.
+
 ## Verify, don't assume
 
 The specification's standard is _"do not claim functionality works without
 testing it."_ Run it and look: `npm run build && npm run start -w web`, then the
 `browser-automation` skill for the console report and the accessibility tree.
-That is how the contrast failures and the redundant logo link above were found.
+That is how the contrast failures, the redundant logo link, the NUL bytes in
+`common.ts` and the missing-CSP-under-curl bug were all found — none of them
+showed up in a typecheck, a lint or a passing build.
