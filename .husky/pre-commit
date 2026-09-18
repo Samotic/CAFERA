@@ -1,1 +1,17 @@
-npx lint-staged
+#!/bin/sh
+# Format and lint only the staged files — fast, and it fixes in place.
+npx lint-staged || exit 1
+
+# Then typecheck the whole tree.
+#
+# lint-staged cannot do this: TypeScript is a whole-program analysis, and a
+# change to one file breaks types in another that is not staged. A type error
+# reached main once already this way — prettier and eslint both passed while
+# `tsc` did not, because nothing in the hook was running `tsc`.
+echo "pre-commit: typechecking…"
+npm run typecheck --silent || {
+  echo ""
+  echo "pre-commit: typecheck failed — commit aborted."
+  echo "Run 'npm run typecheck' to see the errors."
+  exit 1
+}

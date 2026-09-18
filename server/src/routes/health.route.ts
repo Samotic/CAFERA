@@ -38,9 +38,10 @@ export const healthRouter = Router();
  * liveness conditional on a latency threshold would reintroduce the restart loop
  * this file exists to prevent.
  */
+/* The histogram is a libuv handle that does not hold the event loop open, so it
+   needs no unref and the process still exits cleanly on SIGTERM. */
 const loopDelay = monitorEventLoopDelay({ resolution: 20 });
 loopDelay.enable();
-loopDelay.unref?.();
 
 function eventLoopDelayMs(): number {
   return Math.round(loopDelay.mean / 1e6);
