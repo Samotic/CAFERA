@@ -393,12 +393,42 @@ npm run test:e2e -w web     # browsers
 
 ## Deployment
 
-| Piece    | Target                                                                |
-| -------- | --------------------------------------------------------------------- |
-| Frontend | Vercel                                                                |
-| API      | Railway / Render / Fly.io                                             |
-| Database | MongoDB Atlas, IP allow-list, least-privilege user, automated backups |
-| Media    | Cloudinary, signed uploads                                            |
+| Piece    | Target                                                                | Region                     |
+| -------- | --------------------------------------------------------------------- | -------------------------- |
+| Frontend | Vercel                                                                | `fra1` (Frankfurt)         |
+| API      | Railway / Render / Fly.io                                             | `europe-west4` / Frankfurt |
+| Database | MongoDB Atlas, IP allow-list, least-privilege user, automated backups | AWS `eu-central-1`         |
+| Media    | Cloudinary, signed uploads                                            | CDN, global                |
+
+### Region pinning is mandatory, not a default
+
+All three services are pinned to **one region in Frankfurt**. This is stated
+explicitly rather than left to platform defaults, because the defaults do not
+agree with each other: Vercel functions default to `iad1` (Washington) and Atlas
+free tiers frequently land in `us-east-1`, which silently puts an ocean between
+the API and its database.
+
+The reason is the request chain on a recipe page:
+
+```
+edge → Next server → Express API → Atlas
+```
+
+Four hops before first byte. The Atlas hop is the one that varies most, and a
+cross-region cluster adds **100 ms or more per query** — paid again for every
+query a page issues. That, not the rendering mode, is what misses the LCP < 2.0 s
+target in §33.
+
+Pooling is configured to match (`server/src/config/database.ts`): one connection
+established per process and reused for its lifetime, `minPoolSize: 5` so warm
+sockets are already open when a request arrives, and the connection _promise_
+cached rather than a boolean so concurrent callers at startup cannot open
+competing pools. Measured locally: cold connect **45 ms**, cached connect
+**0 ms**.
+
+> **TTFB baseline: not yet measured.** The four-number breakdown (edge TTFB,
+> Next render, Express handler, Atlas query) requires a real deploy and has not
+> been taken. See [Build status](#build-status).
 
 **Release checklist.** Real `NEXT_PUBLIC_API_URL` (a localhost value ships a site
 that cannot load data — the bundle scanner fails the build on one) · custom domain
