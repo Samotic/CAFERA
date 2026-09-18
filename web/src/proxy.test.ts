@@ -80,6 +80,9 @@ describe('nonce and shared caching are mutually exclusive', () => {
     expect(matcher.test('/_next/static/chunks/main.js')).toBe(false);
     expect(matcher.test('/favicon.ico')).toBe(false);
     expect(matcher.test('/manifest.webmanifest')).toBe(false);
+    // API requests are rewritten to Express, which sets its own headers.
+    expect(matcher.test('/api/recipes')).toBe(false);
+    expect(matcher.test('/api/auth/refresh')).toBe(false);
 
     // …while real pages are still covered.
     expect(matcher.test('/')).toBe(true);

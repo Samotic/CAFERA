@@ -304,12 +304,38 @@ points where.
 
 Security requirements were treated as non-negotiable rather than as a checklist.
 
+### Cookie topology: same-origin via proxy
+
+The browser only ever talks to the web origin. `/api/*` is rewritten by Next to
+the Express service, so every request is first-party and the refresh cookie is a
+first-party cookie.
+
+**The exact attribute string this deployment sets** (derived by
+`describeRefreshCookie()`, so this documentation cannot drift from the code):
+
+```
+cafera_rt=<token>; HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=2592000
+```
+
+`Secure` is omitted in local development only; `config/env.ts` refuses to boot in
+production without it.
+
+> **Never use a cross-site split.** A frontend on `*.vercel.app` talking to an API
+> on `*.railway.app` forces `SameSite=None`, which makes the refresh cookie a
+> **third-party cookie** — blocked outright by Safari's ITP and by Firefox's Total
+> Cookie Protection. Login appears to succeed and the session silently fails to
+> persist, for a large share of real users, on browsers you are least likely to be
+> developing in. A test asserts this configuration can never be reached.
+
+Choosing same-origin is also what makes `SameSite=Strict` viable — the strictest
+setting available, and one a cross-site setup could not use at all.
+
 **Sessions.** The access token is short-lived (15 min), returned in the response
-body, and held **in memory only**. The refresh token is long-lived and lives in an
-`httpOnly; Secure; SameSite` cookie that JavaScript cannot read. Refresh tokens
-rotate on every use with reuse detection: a token presented twice invalidates the
-entire family, which is what turns a stolen refresh token from a permanent
-foothold into a detectable, revoked one.
+body, and held **in memory only**. The refresh token is long-lived and lives in the
+`httpOnly` cookie above, which JavaScript cannot read. Refresh tokens rotate on
+every use with reuse detection: a token presented twice invalidates the entire
+family, which is what turns a stolen refresh token from a permanent foothold into
+a detectable, revoked one.
 
 > **No token is ever written to `localStorage` or `sessionStorage`.** This is the
 > single most important difference between a web client and a mobile one — any XSS
@@ -317,8 +343,16 @@ foothold into a detectable, revoked one.
 > primitive. An ESLint rule fails the build on any attempt, and an E2E test asserts
 > both storage areas stay clean after login.
 
-**Other controls.** CSRF protection via `SameSite` plus a double-submit token on
-every cookie-authenticated state-changing request · a nonce-based CSP with no
+**CSRF.** Mounted once at `/api`, so a new endpoint is protected by default
+rather than protected if someone remembers. Two independent checks: an
+`Origin` / `Sec-Fetch-Site` test that a page on another origin cannot forge, and a
+double-submit token compared in **constant time** (a plain `===` leaks, through
+timing, how many leading characters matched). `SameSite=Strict` is a third layer
+but is not relied on alone — a defence that evaporates on an unusual client is not
+a defence. Safe methods are exempt; health probes are mounted before the gate
+because they carry no cookies.
+
+**Other controls.** A nonce-based CSP with no
 `unsafe-inline` · HSTS, `X-Content-Type-Options`, `Referrer-Policy`,
 `Permissions-Policy` and `X-Frame-Options: DENY` · a strict CORS allow-list with
 credentials (never `*`) · rate limiting, stricter on auth routes and keyed on IP

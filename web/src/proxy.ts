@@ -194,7 +194,12 @@ export const config = {
    * aggressively cacheable — the prohibition in this file applies only to HTML
    * carrying a nonce, never to assets, JSON or images.
    */
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|icons/|images/|manifest.webmanifest).*)'],
+  matcher: [
+    /* `api/` is excluded as well: those requests are rewritten to the Express
+       service, which sets its own headers. Applying a document CSP and
+       `no-store` to a JSON response would be wrong on both counts. */
+    '/((?!api/|_next/static|_next/image|favicon.ico|icons/|images/|manifest.webmanifest).*)',
+  ],
 };
 
 /** Exported for the guard test. */

@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { env, isProduction, isTest } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+import { csrfProtection } from './middleware/csrf.middleware.js';
 import { generalLimiter } from './middleware/rateLimit.middleware.js';
 import { sanitizeRequest } from './middleware/sanitize.middleware.js';
 import { healthRouter } from './routes/health.route.js';
@@ -98,7 +99,16 @@ export function createApp(): Express {
   app.use(sanitizeRequest);
 
   app.use('/api', generalLimiter);
+
+  /* Health is mounted BEFORE the CSRF gate: probes are unauthenticated GETs from
+     a load balancer that has no cookie jar and no token to present. */
   app.use('/api/health', healthRouter);
+
+  /* Everything below this line is CSRF-protected. Safe methods pass straight
+     through; state-changing ones must prove they came from our own origin.
+     Mounting it once here rather than per-route means a new endpoint is
+     protected by default instead of protected if someone remembers. */
+  app.use('/api', csrfProtection);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

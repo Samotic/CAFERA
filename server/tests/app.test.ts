@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import request from 'supertest';
+import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from '@cafera/shared';
 import { createApp } from '../src/app.js';
+import { createCsrfToken } from '../src/middleware/csrf.middleware.js';
 
 /**
  * Foundation tests: the middleware stack, not any particular feature.
@@ -68,17 +70,35 @@ describe('CORS allow-list', () => {
 });
 
 describe('NoSQL injection sanitiser', () => {
-  it('strips MongoDB operators from a request body', async () => {
-    /* There is no route to POST to yet, so the assertion is that the payload is
-       refused as a 404 rather than reaching a handler — and, critically, that the
-       sanitiser does not throw while walking it. */
+  it('walks an operator-laden body without throwing', async () => {
+    /* A valid CSRF token is supplied so the request gets *past* the CSRF gate —
+       otherwise this would assert nothing about the sanitiser, only that CSRF
+       rejects an untokened POST (which csrf.test.ts already covers).
+
+       There is no route to POST to yet, so reaching the 404 is the assertion:
+       the sanitiser walked `$ne` and `$where` and stripped them rather than
+       throwing on the way through. */
+    const token = createCsrfToken();
+
     const response = await request(app)
       .post('/api/does-not-exist')
+      .set('Sec-Fetch-Site', 'same-origin')
+      .set('Cookie', `${CSRF_COOKIE_NAME}=${token}`)
+      .set(CSRF_HEADER_NAME, token)
       .send({ email: { $ne: null }, nested: { $where: 'sleep(1000)' } });
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
     expect(response.body.error.code).toBe('NOT_FOUND');
+  });
+
+  it('refuses the same payload outright when it arrives without a CSRF token', async () => {
+    // Defence in depth: the gate stops it before the sanitiser is even needed.
+    const response = await request(app)
+      .post('/api/does-not-exist')
+      .send({ email: { $ne: null } });
+
+    expect(response.status).toBe(403);
   });
 });
 

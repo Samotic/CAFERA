@@ -37,6 +37,29 @@ const FORBIDDEN = [
  */
 const LOCALHOST = /https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/;
 
+/**
+ * Tokens must never reach web storage.
+ *
+ * Any XSS on the page can read `localStorage` and `sessionStorage`, so a token
+ * stored there is an account-takeover primitive rather than a convenience. The
+ * access token lives in memory and the refresh token in an httpOnly cookie.
+ *
+ * An ESLint rule blocks the obvious spelling in source, but a minified bundle is
+ * where the truth is: this catches the case that arrived through a dependency,
+ * a copied snippet, or a rule someone disabled.
+ */
+const TOKEN_STORAGE = [
+  {
+    pattern:
+      /(?:localStorage|sessionStorage)\s*\.\s*setItem\s*\(\s*["'`][^"'`]*(?:token|auth|jwt|bearer|credential|refresh)/i,
+    reason: 'a token-shaped key written to web storage',
+  },
+  {
+    pattern: /(?:localStorage|sessionStorage)\s*\[\s*["'`][^"'`]*(?:token|auth|jwt|bearer)/i,
+    reason: 'a token-shaped key indexed on web storage',
+  },
+];
+
 async function* walk(directory) {
   let entries;
   try {
@@ -64,6 +87,14 @@ for await (const file of walk(CLIENT_DIR)) {
   for (const { pattern, reason } of FORBIDDEN) {
     if (pattern.test(contents)) {
       failures.push(`${reason} found in ${file}`);
+    }
+  }
+
+  for (const { pattern, reason } of TOKEN_STORAGE) {
+    if (pattern.test(contents)) {
+      failures.push(
+        `${reason} in ${file} — the access token is memory-only and the refresh token is an httpOnly cookie`,
+      );
     }
   }
 

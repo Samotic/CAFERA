@@ -165,7 +165,34 @@ a security header a request can opt out of by saying less is not a security
 header. Only positively identified non-documents (RSC payloads, `sec-fetch-dest`
 of `image`/`script`/etc.) are skipped.
 
-### 3. `upgrade-insecure-requests` only on a genuinely secure origin
+### 3. Cookie topology: same-origin via the Next proxy
+
+The browser only ever talks to the web origin. `/api/*` is rewritten by Next
+(`next.config.ts`) to the Express service, so every request is first-party.
+
+**Do not move to a cross-site split** (frontend on `*.vercel.app`, API on
+`*.railway.app`). That forces `SameSite=None`, making the refresh cookie a
+third-party cookie — blocked outright by Safari's ITP and by Firefox's Total
+Cookie Protection. Login appears to succeed and the session silently fails to
+persist for a large share of real users, on browsers you are unlikely to be
+developing in. A test asserts `isThirdPartyCookieConfiguration()` stays false.
+
+Consequences that follow:
+
+- Refresh cookie: `HttpOnly; Secure; SameSite=Strict; Path=/api/auth`. Strict is
+  only viable _because_ everything is same-origin.
+- CSRF: `csrfProtection` is mounted once at `/api`, so a new endpoint is
+  protected by default rather than protected if someone remembers. Two
+  independent checks — an `Origin`/`Sec-Fetch-Site` test, and a double-submit
+  token compared in constant time.
+- Health is mounted **before** the CSRF gate: probes carry no cookies.
+
+One trap worth knowing: an unset variable in a `.env` file is an **empty
+string**, not `undefined`, so `??` passes it straight through. That produced a
+rewrite destination of `/api/:path*` pointing at itself, and every API call
+404'd against the Next app. Use a non-empty check, not `??`.
+
+### 4. `upgrade-insecure-requests` only on a genuinely secure origin
 
 `proxy.ts` gates that directive on the actual protocol (or `x-forwarded-proto`),
 never on `NODE_ENV`. On a plain-HTTP origin it rewrites every subresource URL to
@@ -176,7 +203,7 @@ Chromium and Firefox hide this by exempting loopback addresses. **WebKit does
 not**, so gating on `NODE_ENV` made the production build untestable in Safari.
 Found by the cross-browser Playwright run; invisible in the other two engines.
 
-### 4. Dialogs restore focus manually, because Safari does not
+### 5. Dialogs restore focus manually, because Safari does not
 
 Chromium and Firefox return focus to the element that opened a `<dialog>`.
 Safari does not when `close()` is called programmatically — focus sits on the
@@ -192,12 +219,12 @@ click** (macOS convention). So a mouse user there never had focus on the
 trigger, and tests for focus restoration must open the dialog from the keyboard
 or they assert something that cannot happen.
 
-### 5. Components never declare their own focus outline
+### 6. Components never declare their own focus outline
 
 See the design-token section above. A local `focus-visible:outline-*` utility
 outranks the base rule and silently drops the halo.
 
-### 6. Control characters are matched with `\p{Cc}`, never a literal range
+### 7. Control characters are matched with `\p{Cc}`, never a literal range
 
 `shared/src/schemas/common.ts` uses the Unicode property escape. An explicit
 `�-` range put **real control bytes, including NUL, into the source
