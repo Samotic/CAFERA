@@ -1,21 +1,24 @@
 'use client';
 
-import { useCallback, useEffect, useId, useRef } from 'react';
+import { useId } from 'react';
 import { X } from 'lucide-react';
+import { useNativeDialog } from '@/hooks/useNativeDialog';
 import { cn } from '@/lib/cn';
 import { IconButton } from './Button';
 
 /**
- * Built on the native `<dialog>` element opened with `showModal()`.
+ * A centred dialog, built on the native `<dialog>` element opened with
+ * `showModal()`.
  *
  * That one decision hands us, from the platform: a real focus trap, Esc to
  * close, focus restored to the trigger, inert background content, and correct
  * `role="dialog" aria-modal` semantics. Every hand-rolled modal reimplements
  * those four things and most get at least one wrong.
  *
- * What is left for us: locking background scroll (the platform does not), and
- * closing on a backdrop click (the platform gives us the click but not the
- * intent — a click on the dialog's own padding must not close it).
+ * The two things the platform does *not* provide — a body scroll lock and an
+ * exit animation — are solved once and shared with Sheet: `useNativeDialog`
+ * wires the behaviour, and the transition is CSS in `globals.css` keyed off
+ * `data-cafera-dialog`. Neither is reimplemented here.
  */
 
 export interface ModalProps {
@@ -48,57 +51,22 @@ export function Modal({
   size = 'md',
   className,
 }: ModalProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const { ref, onCancel, onClick } = useNativeDialog({ isOpen, onClose, dismissible });
   const titleId = useId();
   const descriptionId = useId();
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    if (isOpen && !dialog.open) {
-      dialog.showModal();
-      document.body.style.overflow = 'hidden';
-    } else if (!isOpen && dialog.open) {
-      dialog.close();
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  /* Esc fires `cancel`; we prevent the default close so React state stays the
-     single source of truth for whether the dialog is open. */
-  const handleCancel = useCallback(
-    (event: React.SyntheticEvent<HTMLDialogElement>) => {
-      event.preventDefault();
-      if (dismissible) onClose();
-    },
-    [dismissible, onClose],
-  );
-
-  const handleBackdropClick = useCallback(
-    (event: React.MouseEvent<HTMLDialogElement>) => {
-      if (!dismissible) return;
-      // The click landed on the <dialog> itself, i.e. the backdrop, not on the
-      // panel inside it.
-      if (event.target === dialogRef.current) onClose();
-    },
-    [dismissible, onClose],
-  );
-
   return (
     <dialog
-      ref={dialogRef}
-      onCancel={handleCancel}
-      onClick={handleBackdropClick}
+      ref={ref}
+      onCancel={onCancel}
+      onClick={onClick}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
+      data-cafera-dialog=""
+      data-dialog-variant="center"
       className={cn(
         'bg-transparent p-0 text-inherit backdrop:bg-[rgb(32_26_23/0.55)] backdrop:backdrop-blur-sm',
-        'm-auto w-[calc(100%-2rem)] open:animate-[cafera-modal-in_200ms_ease-out]',
+        'm-auto w-[calc(100%-2rem)]',
         SIZES[size],
         className,
       )}
@@ -122,7 +90,7 @@ export function Modal({
           ) : null}
         </header>
 
-        <div className="overflow-y-auto p-5">{children}</div>
+        <div className="overflow-y-auto overscroll-contain p-5">{children}</div>
 
         {footer ? (
           <footer className="border-border flex flex-wrap justify-end gap-3 border-t p-5">

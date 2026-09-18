@@ -150,7 +150,7 @@ function ToastViewport({
       aria-relevant="additions text"
       /* Above the bottom nav on mobile; bottom-right on desktop. `pointer-events-none`
          on the stack means a toast never blocks a click on the page behind it. */
-      className="safe-bottom pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col items-center gap-2 p-4 sm:inset-x-auto sm:right-0 sm:items-end"
+      className="safe-bottom scrollbar-compensated pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col items-center gap-2 p-4 sm:inset-x-auto sm:right-0 sm:items-end"
     >
       {toasts.map((item) => {
         const Icon = TONE_ICONS[item.tone];

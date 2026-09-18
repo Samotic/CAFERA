@@ -24,7 +24,7 @@ export function BottomNav() {
     <nav
       aria-label="Primary"
       className={cn(
-        'bg-card/95 border-border safe-bottom fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur-md',
+        'bg-card/95 border-border safe-bottom scrollbar-compensated fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur-md',
         'lg:hidden',
       )}
     >

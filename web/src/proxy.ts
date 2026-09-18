@@ -72,7 +72,12 @@ function createNonce(): string {
  * `unsafe-inline` on any directive that also carries a nonce, so listing both is
  * a graceful degradation for old browsers rather than a weakening of the policy.
  */
-function buildCsp(nonce: string, isDev: boolean, apiOrigin: string | null): string {
+function buildCsp(
+  nonce: string,
+  isDev: boolean,
+  apiOrigin: string | null,
+  isSecure: boolean,
+): string {
   const directives: Record<string, string[]> = {
     'default-src': ["'self'"],
     'script-src': [
@@ -104,7 +109,20 @@ function buildCsp(nonce: string, isDev: boolean, apiOrigin: string | null): stri
     .map(([directive, values]) => `${directive} ${values.join(' ')}`)
     .join('; ');
 
-  return isDev ? serialised : `${serialised}; upgrade-insecure-requests`;
+  /**
+   * `upgrade-insecure-requests` is emitted only on a genuinely secure origin.
+   *
+   * It rewrites every http:// subresource URL to https://, which is exactly
+   * right in production and catastrophic on a plain-HTTP origin: there is no
+   * TLS listener to upgrade *to*, so every stylesheet, script and font fails
+   * with an SSL error and the page renders completely unstyled.
+   *
+   * Chromium and Firefox hide this by exempting loopback addresses. **WebKit
+   * does not**, so gating on NODE_ENV alone made the production build
+   * untestable in Safari — found by the cross-browser suite, invisible in the
+   * other two engines.
+   */
+  return isSecure ? `${serialised}; upgrade-insecure-requests` : serialised;
 }
 
 /**
@@ -136,6 +154,14 @@ export function proxy(request: NextRequest): NextResponse {
   const isDev = process.env.NODE_ENV !== 'production';
   const apiOrigin = process.env.NEXT_PUBLIC_API_URL ?? null;
 
+  /* Behind a load balancer the connection to this process is plain HTTP even
+     though the browser's connection is HTTPS, so the forwarded header is the
+     authority when it is present. */
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+  const isSecure = forwardedProto
+    ? forwardedProto.split(',')[0]?.trim() === 'https'
+    : request.nextUrl.protocol === 'https:';
+
   if (!isDocumentRequest(request)) {
     return NextResponse.next();
   }
@@ -151,7 +177,7 @@ export function proxy(request: NextRequest): NextResponse {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
 
-  response.headers.set('Content-Security-Policy', buildCsp(nonce, isDev, apiOrigin));
+  response.headers.set('Content-Security-Policy', buildCsp(nonce, isDev, apiOrigin, isSecure));
 
   /* See consequence 3 in the decision record above. This is set unconditionally
      for documents rather than opted into per route, because the dangerous case

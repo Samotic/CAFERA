@@ -165,7 +165,39 @@ a security header a request can opt out of by saying less is not a security
 header. Only positively identified non-documents (RSC payloads, `sec-fetch-dest`
 of `image`/`script`/etc.) are skipped.
 
-### 3. Control characters are matched with `\p{Cc}`, never a literal range
+### 3. `upgrade-insecure-requests` only on a genuinely secure origin
+
+`proxy.ts` gates that directive on the actual protocol (or `x-forwarded-proto`),
+never on `NODE_ENV`. On a plain-HTTP origin it rewrites every subresource URL to
+`https://`, there is no TLS listener to reach, and **every stylesheet, script and
+font fails with an SSL error** — the page renders completely unstyled.
+
+Chromium and Firefox hide this by exempting loopback addresses. **WebKit does
+not**, so gating on `NODE_ENV` made the production build untestable in Safari.
+Found by the cross-browser Playwright run; invisible in the other two engines.
+
+### 4. Dialogs restore focus manually, because Safari does not
+
+Chromium and Firefox return focus to the element that opened a `<dialog>`.
+Safari does not when `close()` is called programmatically — focus sits on the
+dialog's close button briefly and then falls to `<body>`, stranding a keyboard
+user at the top of the page.
+
+`useNativeDialog` restores it, but only after checking the engine did not
+already do so. Focusing unconditionally would fight the browsers that get it
+right and would yank focus from wherever the user has since moved it.
+
+Related Safari behaviour worth knowing: **Safari does not focus a button on
+click** (macOS convention). So a mouse user there never had focus on the
+trigger, and tests for focus restoration must open the dialog from the keyboard
+or they assert something that cannot happen.
+
+### 5. Components never declare their own focus outline
+
+See the design-token section above. A local `focus-visible:outline-*` utility
+outranks the base rule and silently drops the halo.
+
+### 6. Control characters are matched with `\p{Cc}`, never a literal range
 
 `shared/src/schemas/common.ts` uses the Unicode property escape. An explicit
 `�-` range put **real control bytes, including NUL, into the source

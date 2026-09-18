@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useId, useRef } from 'react';
+import { useId } from 'react';
 import { X } from 'lucide-react';
+import { useNativeDialog } from '@/hooks/useNativeDialog';
 import { cn } from '@/lib/cn';
 import { IconButton } from './Button';
 
@@ -9,9 +10,11 @@ import { IconButton } from './Button';
  * A panel anchored to an edge of the viewport: the filter drawer on mobile, the
  * navigation menu under `lg`.
  *
- * Same reasoning as Modal — a native `<dialog>` supplies the focus trap, Esc
- * handling and focus restoration. Only the geometry and the slide transition
- * differ, so the two components share an approach rather than a base class.
+ * Built on a native `<dialog>`, so the focus trap, Esc handling, focus
+ * restoration and inert background all come from the platform. The two things
+ * the platform does *not* provide are handled elsewhere and shared with Modal:
+ * the body scroll lock lives in `useScrollLock`, and the enter/exit transition
+ * is pure CSS in `globals.css` keyed off `data-cafera-dialog`.
  *
  * Height is `100dvh`, not `100vh`: on mobile Safari and Chrome the URL bar makes
  * `vh` taller than the visible viewport, which would push a sheet's action
@@ -37,12 +40,6 @@ const SIDE_STYLES: Record<SheetSide, string> = {
   left: 'mr-auto ml-0 my-0 h-dvh max-h-dvh w-[min(24rem,90vw)] rounded-r-xl',
 };
 
-const SIDE_ANIMATION: Record<SheetSide, string> = {
-  bottom: 'open:animate-[cafera-sheet-up_250ms_ease-out]',
-  right: 'open:animate-[cafera-sheet-right_250ms_ease-out]',
-  left: 'open:animate-[cafera-sheet-left_250ms_ease-out]',
-};
-
 export function Sheet({
   isOpen,
   onClose,
@@ -52,53 +49,22 @@ export function Sheet({
   footer,
   className,
 }: SheetProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const { ref, onCancel, onClick } = useNativeDialog({ isOpen, onClose });
   const titleId = useId();
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    if (isOpen && !dialog.open) {
-      dialog.showModal();
-      document.body.style.overflow = 'hidden';
-    } else if (!isOpen && dialog.open) {
-      dialog.close();
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  const handleCancel = useCallback(
-    (event: React.SyntheticEvent<HTMLDialogElement>) => {
-      event.preventDefault();
-      onClose();
-    },
-    [onClose],
-  );
-
-  const handleBackdropClick = useCallback(
-    (event: React.MouseEvent<HTMLDialogElement>) => {
-      if (event.target === dialogRef.current) onClose();
-    },
-    [onClose],
-  );
 
   return (
     <dialog
-      ref={dialogRef}
-      onCancel={handleCancel}
-      onClick={handleBackdropClick}
+      ref={ref}
+      onCancel={onCancel}
+      onClick={onClick}
       aria-labelledby={titleId}
+      /* These two attributes are the hook into the shared transition CSS. */
+      data-cafera-dialog=""
+      data-dialog-variant={side}
       className={cn(
         'bg-card text-text max-w-none p-0 shadow-xl',
         'backdrop:bg-[rgb(32_26_23/0.5)] backdrop:backdrop-blur-sm',
         SIDE_STYLES[side],
-        SIDE_ANIMATION[side],
-        'motion-reduce:animate-none',
         className,
       )}
     >

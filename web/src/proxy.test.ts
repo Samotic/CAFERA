@@ -116,7 +116,7 @@ describe('policy contents', () => {
   const nonce = createNonce();
 
   it('forbids inline script in production', () => {
-    const csp = buildCsp(nonce, false, 'https://api.cafera.app');
+    const csp = buildCsp(nonce, false, 'https://api.cafera.app', true);
     const scriptSrc = csp.split(';').find((part) => part.trim().startsWith('script-src')) ?? '';
 
     expect(scriptSrc).not.toContain("'unsafe-inline'");
@@ -126,12 +126,12 @@ describe('policy contents', () => {
   });
 
   it('allows unsafe-eval only in development, where the dev server needs it', () => {
-    expect(buildCsp(nonce, true, null)).toContain("'unsafe-eval'");
-    expect(buildCsp(nonce, false, null)).not.toContain("'unsafe-eval'");
+    expect(buildCsp(nonce, true, null, false)).toContain("'unsafe-eval'");
+    expect(buildCsp(nonce, false, null, true)).not.toContain("'unsafe-eval'");
   });
 
   it('locks down the directives that enable clickjacking and base-tag injection', () => {
-    const csp = buildCsp(nonce, false, null);
+    const csp = buildCsp(nonce, false, null, true);
 
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("object-src 'none'");
@@ -140,20 +140,26 @@ describe('policy contents', () => {
   });
 
   it('allows the API origin to be contacted and nothing else', () => {
-    const csp = buildCsp(nonce, false, 'https://api.cafera.app');
+    const csp = buildCsp(nonce, false, 'https://api.cafera.app', true);
     const connectSrc = csp.split(';').find((part) => part.trim().startsWith('connect-src')) ?? '';
 
     expect(connectSrc).toContain('https://api.cafera.app');
     expect(connectSrc).not.toContain('*');
   });
 
-  it('upgrades insecure requests in production only', () => {
-    expect(buildCsp(nonce, false, null)).toContain('upgrade-insecure-requests');
-    expect(buildCsp(nonce, true, null)).not.toContain('upgrade-insecure-requests');
+  it('upgrades insecure requests only on a genuinely secure origin', () => {
+    expect(buildCsp(nonce, false, null, true)).toContain('upgrade-insecure-requests');
+
+    /* On a plain-HTTP origin there is no TLS listener to upgrade to, so the
+       directive makes every subresource fail with an SSL error and the page
+       renders unstyled. Chromium and Firefox hide this by exempting loopback;
+       WebKit does not, which is how it was found. */
+    expect(buildCsp(nonce, false, null, false)).not.toContain('upgrade-insecure-requests');
+    expect(buildCsp(nonce, true, null, false)).not.toContain('upgrade-insecure-requests');
   });
 
   it('permits Cloudinary images but not arbitrary remote hosts', () => {
-    const csp = buildCsp(nonce, false, null);
+    const csp = buildCsp(nonce, false, null, true);
     const imgSrc = csp.split(';').find((part) => part.trim().startsWith('img-src')) ?? '';
 
     expect(imgSrc).toContain('https://res.cloudinary.com');

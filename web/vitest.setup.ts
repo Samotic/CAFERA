@@ -29,8 +29,19 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-/* Modal and Sheet are built on native <dialog>, which jsdom declares but does
-   not implement. Without these the components throw on open. */
+/**
+ * Modal and Sheet are built on native `<dialog>`, which jsdom declares but does
+ * not implement.
+ *
+ * The Escape behaviour is stubbed as well as `showModal`/`close`, because
+ * without it a test asserting "Esc closes the dialog" simply observes nothing
+ * happening — and its mirror image, "Esc does NOT close a non-dismissible
+ * dialog", passes vacuously for the same reason. A fixture that makes a test
+ * pass for the wrong reason is worse than a missing fixture.
+ *
+ * Real Esc handling, focus trapping and focus restoration are the platform's
+ * job and are verified in the Playwright suite, which runs a real browser.
+ */
 if (!HTMLDialogElement.prototype.showModal) {
   HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
     this.open = true;
@@ -39,6 +50,15 @@ if (!HTMLDialogElement.prototype.showModal) {
     this.open = false;
     this.dispatchEvent(new Event('close'));
   };
+
+  // Escape on an open modal dialog fires `cancel`, which is what our components
+  // listen for — `close` alone would bypass the dismissible check entirely.
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const openDialog = document.querySelector<HTMLDialogElement>('dialog[open]');
+    if (!openDialog) return;
+    openDialog.dispatchEvent(new Event('cancel', { cancelable: true, bubbles: false }));
+  });
 }
 
 /* Any component that lazily reveals content on scroll. */

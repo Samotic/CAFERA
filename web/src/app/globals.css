@@ -388,6 +388,14 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  /* Fixed elements do not participate in the body padding that compensates for
+     a hidden scrollbar, so they would slide under where the scrollbar was while
+     a dialog is open. `--scrollbar-width` is published by useScrollLock and is
+     absent (0px) the rest of the time. */
+  .scrollbar-compensated {
+    right: var(--scrollbar-width, 0px);
+  }
+
   .safe-top {
     padding-top: env(safe-area-inset-top, 0px);
   }
@@ -436,6 +444,118 @@
       transform: translateX(100%);
     }
   }
+}
+
+/* ==========================================================================
+   Native <dialog> transitions
+   --------------------------------------------------------------------------
+   A <dialog> moves between `display: none` and `display: block`, and animating
+   away from `display: none` needs three things that only recently became
+   available together:
+
+     @starting-style              the state to animate FROM on first paint,
+                                  since the element did not exist before
+     transition-behavior:
+       allow-discrete             lets `display` participate in a transition
+                                  instead of flipping instantly
+     transition on `overlay`      keeps the element in the top layer for the
+                                  duration of the EXIT — without it the dialog
+                                  leaves the top layer immediately and the
+                                  close appears instant no matter what else is
+                                  animating
+
+   Miss any one and the open animates while the close snaps, which is the usual
+   symptom of a hand-rolled version.
+
+   Degradation: where `@starting-style` or `allow-discrete` is unsupported, the
+   unknown declarations are dropped and the dialog opens and closes instantly.
+   That is correct, just unanimated — nothing breaks, and no JavaScript fallback
+   is needed.
+   ========================================================================== */
+dialog[data-cafera-dialog] {
+  opacity: 0;
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out),
+    display var(--duration-base) allow-discrete,
+    overlay var(--duration-base) allow-discrete;
+}
+
+dialog[data-cafera-dialog][open] {
+  opacity: 1;
+  transform: none;
+}
+
+dialog[data-cafera-dialog]::backdrop {
+  opacity: 0;
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    display var(--duration-base) allow-discrete,
+    overlay var(--duration-base) allow-discrete;
+}
+
+dialog[data-cafera-dialog][open]::backdrop {
+  opacity: 1;
+}
+
+/* The state to animate from. Must come after the `[open]` rules. */
+@starting-style {
+  dialog[data-cafera-dialog][open] {
+    opacity: 0;
+  }
+  dialog[data-cafera-dialog][open]::backdrop {
+    opacity: 0;
+  }
+}
+
+/* Per-variant movement. Centre dialogs rise slightly; sheets slide from their
+   own edge. Transform and opacity only, so it all runs on the compositor. */
+dialog[data-dialog-variant='center'] {
+  transform: translateY(8px) scale(0.98);
+}
+
+dialog[data-dialog-variant='bottom'] {
+  transform: translateY(100%);
+}
+
+dialog[data-dialog-variant='right'] {
+  transform: translateX(100%);
+}
+
+dialog[data-dialog-variant='left'] {
+  transform: translateX(-100%);
+}
+
+@starting-style {
+  dialog[data-dialog-variant='center'][open] {
+    transform: translateY(8px) scale(0.98);
+  }
+  dialog[data-dialog-variant='bottom'][open] {
+    transform: translateY(100%);
+  }
+  dialog[data-dialog-variant='right'][open] {
+    transform: translateX(100%);
+  }
+  dialog[data-dialog-variant='left'][open] {
+    transform: translateX(-100%);
+  }
+}
+
+/* Motion is decoration. The dialog still opens and closes, just without travel. */
+@media (prefers-reduced-motion: reduce) {
+  dialog[data-cafera-dialog],
+  dialog[data-cafera-dialog][open],
+  dialog[data-cafera-dialog]::backdrop,
+  dialog[data-cafera-dialog][open]::backdrop {
+    transform: none;
+    transition-duration: 1ms;
+  }
+}
+
+[data-reduced-motion='true'] dialog[data-cafera-dialog],
+[data-reduced-motion='true'] dialog[data-cafera-dialog][open] {
+  transform: none;
+  transition-duration: 1ms;
 }
 
 /* ==========================================================================
