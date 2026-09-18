@@ -107,6 +107,33 @@ cafera/
 └── web/        Next.js App Router frontend
 ```
 
+### How `shared/` is consumed — and what a host must run
+
+`shared/` is a **built package** (strategy B), not TypeScript source consumed
+directly. It emits `dist/` with `exports`, `types` and `main` pointing at the
+compiled output, and is marked `sideEffects: false` so bundlers can drop the
+exports an app does not reference — without which importing one constant from the
+barrel drags in every zod schema.
+
+The built form is required rather than preferred: Express has no bundler to paper
+over module resolution, so it needs real emitted JavaScript. Shipping source
+would work for Next and fail for the API.
+
+**Host configuration — set these explicitly, do not rely on framework detection:**
+
+| Setting                | Value                                                        |
+| ---------------------- | ------------------------------------------------------------ |
+| Root directory         | the repository root (**not** `web/` or `server/`)            |
+| Install command        | `npm ci`                                                     |
+| Build command (web)    | `npm run build -w @cafera/shared && npm run build -w web`    |
+| Build command (API)    | `npm run build -w @cafera/shared && npm run build -w server` |
+| Start command (API)    | `npm run start -w server`                                    |
+| Output directory (web) | `web/.next`                                                  |
+
+Installing from a workspace _subdirectory_ is the failure mode to avoid: npm then
+cannot see the sibling package, and `@cafera/shared` fails to resolve at build
+time with an error that has no local reproduction.
+
 ### Why `shared/` exists
 
 The frontend validates a registration form and the backend validates the same
@@ -509,17 +536,18 @@ on the API so rolling deploys drop nothing in flight.
 
 CAFERA is built in the phases set out in the specification. Current state:
 
-| Phase                   | Status                                                                                                                                                          |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1 — Foundation**      | ✅ Monorepo, strict TypeScript, ESLint/Prettier/Husky, CI, route skeleton and layouts, design-token system with verified contrast, UI primitives                |
-| **1b — API foundation** | ✅ Express 5 app, validated environment, security middleware, error envelope, graceful shutdown, `/api/health` (brought forward to keep the workspace coherent) |
-| **2 — Core UI**         | ⏳ Brand intro, onboarding, auth pages, Home, Discover, recipe detail, Brew Mode, Favorites, My Café, Profile                                                   |
-| **3 — Backend**         | ⏳ Models and indexes, full REST API, authentication, shared validation layer                                                                                   |
-| **4 — Integration**     | ⏳ RTK Query with silent re-auth, route protection, account system, favourites, reviews                                                                         |
-| **5 — Content**         | ⏳ 25 seeded recipes, imagery in both crops, search and filtering, SEO layer                                                                                    |
-| **6 — Polish**          | ⏳ Animation, full state coverage, accessibility and performance passes                                                                                         |
-| **7 — Testing**         | ⏳ Playwright suites, axe in CI, dependency review                                                                                                              |
-| **8 — Production**      | ⏳ Deployment, PWA, monitoring, legal pages, final QA                                                                                                           |
+| Phase                   | Status                                                                                                                                                                                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 — Foundation**      | ✅ Monorepo, strict TypeScript, ESLint/Prettier/Husky, CI, route skeleton and layouts, design-token system with verified contrast, UI primitives                                                                                                                                |
+| **1b — API foundation** | ✅ Express 5 app, validated environment, security middleware, error envelope, graceful shutdown, health probes (brought forward to keep the workspace coherent)                                                                                                                 |
+| **1.5 — Hardening**     | ✅ Nonce-CSP cache guard, region pinning + pooling, liveness/readiness split, contrast audit of both theme halves, dialog scroll lock + exit transitions verified cross-browser, CSRF + same-origin cookie topology. ⏳ TTFB baseline and host build verification need a deploy |
+| **2 — Core UI**         | ⏳ Brand intro, onboarding, auth pages, Home, Discover, recipe detail, Brew Mode, Favorites, My Café, Profile                                                                                                                                                                   |
+| **3 — Backend**         | ⏳ Models and indexes, full REST API, authentication, shared validation layer                                                                                                                                                                                                   |
+| **4 — Integration**     | ⏳ RTK Query with silent re-auth, route protection, account system, favourites, reviews                                                                                                                                                                                         |
+| **5 — Content**         | ⏳ 25 seeded recipes, imagery in both crops, search and filtering, SEO layer                                                                                                                                                                                                    |
+| **6 — Polish**          | ⏳ Animation, full state coverage, accessibility and performance passes                                                                                                                                                                                                         |
+| **7 — Testing**         | ⏳ Playwright suites, axe in CI, dependency review                                                                                                                                                                                                                              |
+| **8 — Production**      | ⏳ Deployment, PWA, monitoring, legal pages, final QA                                                                                                                                                                                                                           |
 
 Green today: **67 tests passing** across all three workspaces, clean typecheck,
 clean lint, clean production build, and a passing client-bundle secret scan.
