@@ -1,20 +1,19 @@
 import type { PublicUser } from './user';
 
 /**
- * Authentication payloads.
+ * Authentication request shapes.
  *
- * The access token is returned in the body and held in memory only. The refresh
- * token never appears here: it is set by the server as an httpOnly cookie and is
- * therefore unreadable to JavaScript by design.
+ * What is deliberately absent: `accessToken`, `expiresIn`, `csrfToken` and
+ * `AccessTokenClaims`. Those described a hand-rolled JWT scheme that Better
+ * Auth replaces in Phase 3 — it owns session issuance, storage, CSRF and
+ * rotation, and a second set of token types sitting beside it would be two
+ * session models that agree only by coincidence.
+ *
+ * The form shapes below survive because they describe what a *user* submits,
+ * which is the same question regardless of what validates it. Each is the
+ * inferred output of a schema in `@/lib/validation/auth`, so the schema stays
+ * the source of truth.
  */
-export interface AuthResponse {
-  user: PublicUser;
-  accessToken: string;
-  /** Seconds until the access token expires, so the client can refresh proactively. */
-  expiresIn: number;
-  /** Double-submit CSRF token, mirrored in a readable cookie. */
-  csrfToken: string;
-}
 
 export interface LoginRequest {
   email: string;
@@ -45,19 +44,14 @@ export interface ChangePasswordRequest {
 }
 
 /**
- * Forgot-password always resolves to this identical response whether or not the
+ * Forgot-password always resolves to an identical response whether or not the
  * address exists, so the endpoint cannot be used to enumerate accounts.
  */
 export interface MessageResponse {
   message: string;
 }
 
-/** Decoded access-token claims. Identity always comes from here, never from the body. */
-export interface AccessTokenClaims {
-  sub: string;
-  role: 'user' | 'admin';
-  /** Token family id, used to detect refresh-token reuse. */
-  sid: string;
-  iat: number;
-  exp: number;
+/** What a signed-in session exposes to the UI. Better Auth supplies it. */
+export interface SessionUser {
+  user: PublicUser;
 }

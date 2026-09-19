@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import { ThemeScript } from '@/components/theme/ThemeScript';
-import { SITE } from '@/constants/site';
+import { SITE } from '@/lib/constants/site';
 import { fontVariables } from '@/theme/fonts';
 import './globals.css';
 

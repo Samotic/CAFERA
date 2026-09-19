@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, Search } from 'lucide-react';
-import { CATEGORY_META, SITE_TAGLINE_PARTS } from '@/constants/home';
+import { CATEGORY_META } from '@/lib/constants/categories';
+import { SITE_TAGLINE_PARTS } from '@/lib/constants/site';
 import { ButtonLink } from '@/components/ui/Button';
 import { ChipLink } from '@/components/ui/Chip';
 

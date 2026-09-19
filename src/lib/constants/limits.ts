@@ -42,13 +42,6 @@ export const ALLOWED_IMAGE_MIME_TYPES = [
 ] as const;
 export type AllowedImageMimeType = (typeof ALLOWED_IMAGE_MIME_TYPES)[number];
 
-/** Access tokens are short-lived because they live in memory and travel in headers. */
-export const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
-/** Refresh tokens live in an httpOnly cookie and are rotated on every use. */
-export const REFRESH_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
-
-/** Name of the httpOnly refresh cookie. Shared so middleware and API agree. */
-export const REFRESH_COOKIE_NAME = 'cafera_rt';
-/** Readable double-submit CSRF cookie; its value is echoed in a request header. */
-export const CSRF_COOKIE_NAME = 'cafera_csrf';
-export const CSRF_HEADER_NAME = 'x-csrf-token';
+/* Token lifetimes and cookie names used to live here. They are Better Auth's to
+   choose now (Phase 3) — defining our own alongside it would give the app two
+   session mechanisms that agree only by coincidence. */

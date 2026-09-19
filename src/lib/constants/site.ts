@@ -65,3 +65,6 @@ export const MY_CAFE_SECTIONS = [
   { href: '/my-cafe/custom', label: 'Custom Recipes', description: 'Your own creations' },
   { href: '/my-cafe/want-to-try', label: 'Want to Try', description: 'Your shortlist' },
 ] as const;
+
+/** The tagline split into words, for the hero eyebrow that separates them. */
+export const SITE_TAGLINE_PARTS = ['Discover', 'Brew', 'Enjoy'] as const;
