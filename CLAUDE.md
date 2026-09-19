@@ -3,239 +3,291 @@
 Context for anyone (human or agent) picking this repository up. Conventions and
 gotchas that are not obvious from the code, and that are expensive to rediscover.
 
-## Layout
+**Master specification:** `CAFERA-BUILD-COMMAND-V2-SERVERLESS.md`.
 
-npm workspaces: `shared/` → `server/` + `web/`.
+> That document is not currently committed to this repository. It is referenced
+> throughout as the target state, so commit it here — several decisions below
+> cite its section numbers, and they cannot be checked against a document nobody
+> can find.
 
-`shared/` compiles to `dist/` and the other two import it from there, so
-**`npm run build -w @cafera/shared` must run before anything else typechecks.**
-A fresh clone that skips it gets a wall of unresolved-import errors.
+## Architecture
+
+One Next.js app on Vercel. No separate API service, no workspaces, one
+`package.json`. Server code, client code and the contracts between them all live
+under `src/`, which is what lets a Server Action and the form that calls it
+validate against the same schema object rather than two copies of it.
+
+```
+src/
+├── app/          App Router — (app) chrome, (auth) bare, (focus) full-viewport
+├── components/   ui/ primitives, recipe/, layout/, brand/
+├── hooks/
+├── lib/
+│   ├── constants/   domain vocabulary and site constants
+│   ├── utils/       pure functions shared by server and client
+│   ├── validation/  zod schemas — the single source of validation truth
+│   ├── db.ts        Mongoose connection (serverless-shaped, see below)
+│   ├── env.ts       the ONLY place process.env is read
+│   └── auth.ts      TODO(phase-3): Better Auth
+├── models/       Mongoose models
+├── types/
+└── proxy.ts      private-route headers only
+```
+
+`npm install` then `npm run dev`. There is no build step for a sibling package
+any more.
 
 ## Next.js 16 — differs from Next 14/15 in ways that matter
 
-The installed version is 16.3.5. Its own docs ship at
-`web/node_modules/next/dist/docs/` — read those rather than trusting recall.
+Its own docs ship at `node_modules/next/dist/docs/` — read those rather than
+trusting recall.
 
-- **`middleware.ts` is now `proxy.ts`**, and the exported function is `proxy`,
-  not `middleware`. The edge runtime is not supported there; `proxy` runs on
-  Node. Config flags renamed too (`skipMiddlewareUrlNormalize` →
-  `skipProxyUrlNormalize`).
+- **`middleware.ts` is now `proxy.ts`**, and the exported function is `proxy`.
+  The edge runtime is not supported there; it runs on Node.
 - **`params` and `searchParams` are Promises**, as are `cookies()`, `headers()`
   and `draftMode()`. Synchronous access was removed, not deprecated. Use the
-  generated `PageProps<'/route'>` / `LayoutProps<'/route'>` helpers
-  (`npx next typegen`).
+  generated `PageProps<'/route'>` / `LayoutProps<'/route'>` helpers.
 - **`revalidateTag` takes a second argument** — a `cacheLife` profile.
-  `revalidateTag('recipes')` alone is a type error; use
-  `revalidateTag('recipes', 'max')`, or `updateTag` for immediate expiry.
 - **`cacheLife` and `cacheTag` are stable** — drop the `unstable_` prefix.
-- **PPR is now `cacheComponents: true`**, not `experimental.ppr`. Not enabled here.
-- **`next lint` and the `eslint` key in `next.config.ts` were removed.** Linting
-  is a separate `npm run lint`, enforced by the pre-commit hook and CI.
-- **`images.qualities` defaults to `[75]`** and `imageSizes` no longer includes 16. Passing a `quality` outside the configured list silently coerces it.
-- **Scroll behaviour is no longer overridden** during navigation unless
-  `<html data-scroll-behavior="smooth">` is set. It is set in the root layout.
+- **PPR is `cacheComponents: true`**, not `experimental.ppr`. Not enabled.
+- **`next lint` and the `eslint` config key were removed.** Linting is a separate
+  `npm run lint`, enforced by the pre-commit hook and by CI.
+- **`images.qualities` defaults to `[75]`.** A `quality` outside the configured
+  list is silently coerced.
 
 ## Tailwind v4
 
-- No `tailwind.config.js`. Tokens are declared in `@theme inline { … }` inside
-  `src/app/globals.css`.
+- No `tailwind.config.js`. Tokens live in `@theme inline { … }` in `globals.css`.
 - `@theme inline` keeps the `var()` reference in the output, which is what lets
   `bg-page` follow the theme at runtime instead of being frozen at build time.
-- The v3 shorthand `bg-[--my-var]` is gone. Use `bg-[var(--my-var)]`, or better,
-  register the token so a plain utility name works.
+- The v3 shorthand `bg-[--my-var]` is gone. Register the token instead.
 - Theming uses `light-dark()` with `color-scheme`, so each colour pair is
   declared once. `[data-theme]` pins it; the OS setting is the default.
 
-## Design tokens — read before touching colours
-
-Components reference **semantic** tokens (`bg-page`, `text-text-muted`,
-`border-border-strong`), never brand colours directly.
-
-The raw brand palette does not meet AA on its own, and this is measured, not
-assumed. Against the cream backgrounds: **Caramel `#C68B59` is 2.71:1** and
-**Muted `#8B7D74` is 3.72:1** — both fail for body text. So:
-
-- `--color-accent` is the decorative caramel **fill**. **Never use it for text,
-  and never for a meaningful graphic** — it measures 2.83:1 on a card, which is
-  below the 3:1 that WCAG 1.4.11 asks of one.
-- `--color-accent-text` (`#8B613E` / `#D9A978`) is the legible one — 4.5:1+.
-- `--color-accent-line` (`#AE7A4E` / `#C68B59`) is the 3:1 UI-boundary variant.
-  Use it for borders, indicators and graphics like the rating stars.
-
-**`npm test -w web` runs the full audit** (`src/theme/contrast.test.ts`). It reads
-the real `globals.css`, so it measures what ships, and it covers **both halves of
-every `light-dark()` pair**. Adding a new colour pairing to the UI means adding a
-row to its table.
-
-### The focus ring is two-tone, and not themed
-
-`--color-focus` (espresso) is banded by `--color-focus-halo` (latte), drawn by a
-single `:focus-visible` rule in `globals.css`.
-
-**Components must never declare their own focus outline.** A local
-`focus-visible:outline-*` utility outranks the base rule and silently drops the
-halo — which is the half that makes the ring visible on dark surfaces.
-
-The reason it is two tones: a focus ring can land on anything, and no single
-colour clears 3:1 against every surface. Measured failures from the attempts that
-came first — a themed pair gave 2.66:1 light / 1.38:1 dark on the inverse
-surface, and a single caramel gave **1.44:1 on the dark-theme primary button**, so
-tabbing onto the main call to action showed no ring at all. Scanned across the
-entire luminance range, espresso-banded-by-latte always leaves one tone at
-**≥3.48:1**.
-
 ## Security invariants
 
-These are not style preferences. Breaking one is a vulnerability:
+Breaking one of these is a vulnerability, not a style regression:
 
-1. **No token in `localStorage` or `sessionStorage`, ever.** Access token in
-   memory, refresh token in an httpOnly cookie. An ESLint rule blocks it;
-   `web/src/lib/storage.ts` is the only module allowed near web storage and its
-   key list is exhaustive.
-2. **Identity comes from the verified JWT only.** No handler reads a user id
-   from a request body or query string.
-3. **`process.env` is read in exactly three places** — `config/env.ts`,
-   `server.ts` and the test setup. Everywhere else imports the validated `env`
-   object. An ESLint rule enforces this.
-4. **Never log a credential.** The pino redaction list in `utils/logger.ts`
-   covers headers, cookies and password/token fields. Extend it when adding a
-   field, don't work around it.
-5. **`npm run build` then `node scripts/check-bundle-secrets.mjs`** before any
-   release. It fails on secret-shaped strings and on a hardcoded localhost URL
-   in a production bundle.
-
-## Server conventions
-
-- Express 5: async errors propagate automatically — no `asyncHandler` wrapper
-  needed. Route wildcards changed syntax (`/*splat`, not `*`).
-- `express-mongo-sanitize` is **incompatible** with Express 5 because `req.query`
-  is a getter. `middleware/sanitize.middleware.ts` replaces it by mutating the
-  parsed objects in place.
-- Throw `ApiError`; never format an error response inside a handler. The single
-  error middleware translates zod, Mongoose, duplicate-key, cast, body-parser and
-  multer failures into the one envelope.
-- Controllers parse and respond. Services decide. Business logic in a route
-  handler is a bug in the layering.
+1. **No token in `localStorage` or `sessionStorage`, ever.** An ESLint rule
+   blocks it, `src/lib/storage.ts` is the only module allowed near web storage,
+   and `npm run scan:secrets` fails on a token-shaped key in the built bundle.
+2. **`process.env` is read in exactly one place** — `src/lib/env.ts`. See
+   decision 3 below.
+3. **`npm run build && npm run scan:secrets`** before any release. Server and
+   client code share one tree now, so an accidental import crosses that boundary
+   silently rather than failing to resolve — this matters more than it did under
+   the workspace split, not less.
 
 ## Testing
 
-- `shared` and `server` use Vitest with the config named `vitest.config.mts` —
-  the `.mts` extension is required for the native ESM config loader.
-- Server tests are hermetic: `envDir: './tests'` stops Vite injecting a
-  developer's real `.env`. A suite that passes only on one machine is not a test.
-- `vitest.setup.ts` in `web/` stubs `matchMedia`, `HTMLDialogElement.showModal`
-  and `IntersectionObserver` — jsdom implements none of them, and `Modal`/`Sheet`
-  are built on native `<dialog>`.
-- Vitest 5 uses rolldown. If it fails with "Cannot find native binding", install
+- Vitest config is `vitest.config.mts` — the `.mts` extension is required for the
+  native ESM config loader.
+- `vitest.setup.ts` stubs `matchMedia`, `HTMLDialogElement.showModal` and
+  `IntersectionObserver`; jsdom implements none of them, and `Modal`/`Sheet` are
+  built on native `<dialog>`. It also dispatches `cancel` on Escape — without
+  that, "Esc does not close a non-dismissible dialog" passes vacuously.
+- Vitest 5 uses rolldown. On "Cannot find native binding", install
   `@rolldown/binding-win32-x64-msvc` at the version matching `rolldown` — an npm
   optional-dependency bug, not a project one.
+- Playwright runs Chromium, Firefox, WebKit and mobile Safari. Run it: the
+  engine-specific failures below were all invisible in Chromium.
 
-## Decisions that must not be silently reversed
+---
 
-Each of these is a deliberate trade with a non-obvious failure mode. Each is
-protected by a test that will fail if it is undone. If you are about to change
-one, read the reasoning first — the change will look like an improvement.
+# Decisions that must not be silently reversed
 
-### 1. Nonce-bearing HTML is never shared-cached
+Each is a deliberate trade with a non-obvious failure mode, and each is protected
+by a test. If you are about to change one, read the reasoning first — the change
+will look like an improvement.
 
-CAFERA serves a nonce-based CSP with no `unsafe-inline` on `script-src`. A nonce
-is only a control while it is unique per response, so:
+## 1. The CSP is static, and `script-src` carries `unsafe-inline`
 
-- HTML is generated per request. **No literal ISR or `generateStaticParams` on
-  recipe pages** while this policy stands. ISR's intent lives one layer down —
-  recipe reads are cached and tag-invalidated.
-- Document responses carry `private, no-store, must-revalidate`, applied
-  unconditionally in `proxy.ts`, never opted into per route.
-- **Never add `s-maxage`, `public` or `stale-while-revalidate` to a document
-  response.** The CDN would cache the nonce with the HTML and serve one nonce to
-  thousands of visitors. Nothing breaks, the header still looks right, and the
-  policy becomes worth roughly `unsafe-inline`.
+This is the least comfortable decision in the codebase, so here is exactly what
+was measured.
 
-If static HTML is wanted later, the correct trade is a **hash-based CSP** for the
-known inline scripts — not caching the nonce.
+v1 used a nonce CSP. A nonce must be unique per response, so the HTML had to be
+generated per request, so it could never be shared-cached — which is precisely
+what static rendering exists to enable. v2 requires static recipe pages, so the
+nonce had to go.
 
-Guarded by `web/src/proxy.test.ts`. Assets, JSON and images are unaffected and
-should stay aggressively cacheable; they are excluded by `config.matcher`.
+The intended replacement was a **hash-based** policy over the one inline script.
+It was implemented and tested in a real browser, and it does not work with the
+App Router, for two independent reasons:
 
-### 2. `isDocumentRequest` fails closed
+1. `'strict-dynamic'` **disables host-based allow-listing**, so `'self'` stops
+   permitting `/_next/static/chunks/*.js`. Under a nonce, trust propagates from
+   the nonced bootstrap to the chunks it loads. A hash on an unrelated script
+   propagates nothing, and every chunk is blocked.
+2. Next emits inline flight scripts (`self.__next_f.push(...)`) whose content
+   varies per page and per build. Four distinct hashes were demanded on the home
+   page alone. They cannot be enumerated when a static header is built.
 
-A client that sends no `Sec-Fetch-Dest` gets the CSP anyway. An earlier version
-treated "cannot tell" as "not a document", and curl received no policy at all —
-a security header a request can opt out of by saying less is not a security
-header. Only positively identified non-documents (RSC payloads, `sec-fetch-dest`
-of `image`/`script`/etc.) are skipped.
+A second attempt kept the theme-script hash _alongside_ `'unsafe-inline'`.
+**A browser ignores `'unsafe-inline'` when a hash or nonce is present in the same
+directive**, so that silently reactivated the broken policy and the page rendered
+as a bare "Loading". Also observed, not theorised.
 
-### 3. Cookie topology: same-origin via the Next proxy
+So the real options are:
 
-The browser only ever talks to the web origin. `/api/*` is rewritten by Next
-(`next.config.ts`) to the Express service, so every request is first-party.
+| policy                   | script integrity | static caching      |
+| ------------------------ | ---------------- | ------------------- |
+| nonce + per-request HTML | strong           | none                |
+| hash only                | —                | does not run at all |
+| `'self' 'unsafe-inline'` | none for inline  | yes                 |
 
-**Do not move to a cross-site split** (frontend on `*.vercel.app`, API on
-`*.railway.app`). That forces `SameSite=None`, making the refresh cookie a
-third-party cookie — blocked outright by Safari's ITP and by Firefox's Total
-Cookie Protection. Login appears to succeed and the session silently fails to
-persist for a large share of real users, on browsers you are unlikely to be
-developing in. A test asserts `isThirdPartyCookieConfiguration()` stays false.
+The third is in force. The honest cost: an injected inline `<script>` would
+execute. What still holds: no `unsafe-eval`, `object-src 'none'`,
+`base-uri 'none'`, `frame-ancestors 'none'`, `connect-src` naming only this
+origin, and React escaping every interpolated value.
 
-Consequences that follow:
+**⚠ If nonce CSP is ever reintroduced:** nonce-bearing HTML must never carry
+`s-maxage`, `public` or `stale-while-revalidate`. A CDN-cached nonce served to
+thousands of visitors is worth roughly `unsafe-inline`.
 
-- Refresh cookie: `HttpOnly; Secure; SameSite=Strict; Path=/api/auth`. Strict is
-  only viable _because_ everything is same-origin.
-- CSRF: `csrfProtection` is mounted once at `/api`, so a new endpoint is
-  protected by default rather than protected if someone remembers. Two
-  independent checks — an `Origin`/`Sec-Fetch-Site` test, and a double-submit
-  token compared in constant time.
-- Health is mounted **before** the CSRF gate: probes carry no cookies.
+### 1b. The cache split runs in both directions
 
-One trap worth knowing: an unset variable in a `.env` file is an **empty
-string**, not `undefined`, so `??` passes it straight through. That produced a
-rewrite destination of `/api/:path*` pointing at itself, and every API call
-404'd against the Next app. Use a non-empty check, not `??`.
+- **Public** (`/`, `/discover`, `/recipes/*`) — shared-cacheable, and must **not**
+  carry `no-store`. Adding it disables the CDN silently and costs every visitor a
+  full origin render.
+- **Private** (`/profile`, `/favorites`, `/my-cafe`, `/welcome`, auth) —
+  `private, no-store`. A shared cache holding one serves one person's favourites
+  to the next visitor.
 
-### 4. `upgrade-insecure-requests` only on a genuinely secure origin
+Guarded by `src/lib/security-headers.test.ts`, verified by sabotaging each
+direction.
 
-`proxy.ts` gates that directive on the actual protocol (or `x-forwarded-proto`),
-never on `NODE_ENV`. On a plain-HTTP origin it rewrites every subresource URL to
-`https://`, there is no TLS listener to reach, and **every stylesheet, script and
-font fails with an SSL error** — the page renders completely unstyled.
+### 1c. `proxy.ts` matches only private routes
 
-Chromium and Firefox hide this by exempting loopback addresses. **WebKit does
-not**, so gating on `NODE_ENV` made the production build untestable in Safari.
-Found by the cross-browser Playwright run; invisible in the other two engines.
+Anything the proxy matches is routed through a function before it can be served
+from the CDN's static cache. A matcher of `/:path*` would quietly undo the static
+rendering above while every header still looked correct.
 
-### 5. Dialogs restore focus manually, because Safari does not
+### 1d. `upgrade-insecure-requests` keys on `VERCEL`, not `NODE_ENV`
 
-Chromium and Firefox return focus to the element that opened a `<dialog>`.
-Safari does not when `close()` is called programmatically — focus sits on the
-dialog's close button briefly and then falls to `<body>`, stranding a keyboard
-user at the top of the page.
+On a plain-HTTP origin it rewrites every subresource to `https://`, finds no TLS
+listener, and the page renders completely unstyled. Chromium and Firefox mask
+this by exempting loopback; **WebKit does not**. This bug has now been introduced
+and caught twice — once in Phase 1.5, once when the CSP moved to a static header
+and `isSecure` quietly came to mean "built for production".
 
-`useNativeDialog` restores it, but only after checking the engine did not
-already do so. Focusing unconditionally would fight the browsers that get it
-right and would yank focus from wherever the user has since moved it.
+## 2. `minPoolSize: 0`, and one shared `MongoClient`
 
-Related Safari behaviour worth knowing: **Safari does not focus a button on
-click** (macOS convention). So a mouse user there never had focus on the
-trigger, and tests for focus restoration must open the dialog from the keyboard
-or they assert something that cannot happen.
+`minPoolSize: 5` is right for a long-lived process and catastrophic on Vercel.
+There is no single process — there are as many function instances as concurrency
+demands, each with its own module scope and its own pool. Five warm sockets
+across a hundred instances is **five hundred connections**, and an Atlas shared
+tier caps at 500. The failure is not a clean refusal: it appears as random
+connection errors under load and reads like an application bug.
 
-### 6. Components never declare their own focus outline
+So: many small pools that release, not few warm ones that hold.
 
-See the design-token section above. A local `focus-visible:outline-*` utility
-outranks the base rule and silently drops the halo.
+- The **promise** is cached, not the resolved connection — two requests racing a
+  cold start would otherwise both open a pool.
+- A rejected promise is evicted, or the instance can never recover from a
+  transient blip.
+- The cache lives on `globalThis`, because a module-scoped variable does not
+  survive Next's hot-reload re-evaluation.
+- `bufferCommands: false`, so a query issued before the connection is ready fails
+  immediately instead of hanging the function until the platform kills it.
+- **`getClient()` exists so Better Auth reuses this pool.** Letting its adapter
+  open its own client would double every instance's connection count — the exact
+  arithmetic this decision exists to control.
 
-### 7. Control characters are matched with `\p{Cc}`, never a literal range
+## 3. `process.env` is read in exactly one place
 
-`shared/src/schemas/common.ts` uses the Unicode property escape. An explicit
-`�-` range put **real control bytes, including NUL, into the source
-file** — invisible in a diff, surviving copy-paste, and caught only when
-something happened to lint that file.
+An unset variable in a `.env` file is an **empty string**, not `undefined`, so
+`??` passes it through as though it were configuration. That produced a Next
+rewrite destination of `/api/:path*` — pointing at itself — and every API call
+404'd with nothing logged.
+
+`src/lib/env.ts` parses at module load with `.min(1)` on every required string.
+An ESLint rule bans `process.env` everywhere else. The schema lives separately in
+`env.schema.ts` so tests exercise the real rules without parsing against whatever
+`.env.local` the machine happens to have.
+
+Related: `.url()` accepts `mongodb+srv://` — a scheme with no host is a valid URL
+— so `MONGODB_URI` checks for a host explicitly.
+
+## 4. The focus ring is two-tone, and not themed
+
+`--color-focus` (espresso) banded by `--color-focus-halo` (latte), drawn by one
+`:focus-visible` rule in `globals.css`.
+
+**Components must never declare their own focus outline.** A local
+`focus-visible:outline-*` utility outranks the base rule and silently drops the
+halo — the half that makes the ring visible on dark surfaces.
+
+Why two tones: a ring can land on anything, and no single colour clears 3:1
+against every surface. Measured failures from the attempts that came first — a
+themed pair gave 2.66:1 light / 1.38:1 dark on the inverse surface, and a single
+caramel gave **1.44:1 on the dark-theme primary button**, so tabbing onto the main
+call to action showed no ring at all. Scanned across the entire luminance range,
+espresso-banded-by-latte always leaves one tone at **≥3.48:1**.
+
+## 5. Design tokens are measured, not eyeballed
+
+The raw brand palette does not meet AA. Against the cream backgrounds, Caramel
+`#C68B59` is **2.71:1** and Muted `#8B7D74` is **3.72:1**.
+
+- `--color-accent` is the decorative fill. **Never text, never a meaningful
+  graphic** — 2.83:1 on a card.
+- `--color-accent-text` is the legible one.
+- `--color-accent-line` is the 3:1 UI-boundary variant. Borders, indicators,
+  rating stars.
+
+`src/theme/contrast.test.ts` reads the real `globals.css` and covers **both
+halves of every `light-dark()` pair** — 81 assertions. Adding a colour pairing to
+the UI means adding a row.
+
+## 6. Dialogs restore focus manually, because Safari does not
+
+Chromium and Firefox return focus to the element that opened a `<dialog>`. Safari
+does not when `close()` is called programmatically — focus falls to `<body>`,
+stranding a keyboard user at the top of the page. `useNativeDialog` restores it,
+but only after checking the engine did not.
+
+Also: **Safari does not focus a button on click** (macOS convention). A test for
+focus restoration must open the dialog from the keyboard, or it asserts something
+that cannot happen.
+
+## 7. Control characters use `\p{Cc}`, never a literal range
+
+`src/lib/validation/common.ts` uses the Unicode property escape. An explicit
+`\u0000-\u001F` range put **real control bytes, including NUL, into the source
+file** — invisible in a diff, surviving copy-paste, caught only when something
+happened to lint that file.
+
+---
+
+# What the serverless port deleted
+
+Phase 1.5 was written against the v1 architecture. Roughly half of it became
+architecture-dead when the project moved to one Next app.
+
+| Phase 1.5 task                      | Fate                                                                                                                                                              |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 — nonce CSP cache guard           | **Inverted**, not deleted. See decision 1.                                                                                                                        |
+| 2 — region pinning, pooling         | Kept; pool settings corrected for serverless.                                                                                                                     |
+| 3 — liveness/readiness split        | **Deleted.** A Vercel function has no process for a liveness probe to kill and nothing to report readiness to.                                                    |
+| 4 — contrast audit                  | Kept, untouched. Protected suite.                                                                                                                                 |
+| 5 — dialog scroll lock, transitions | Kept, untouched. Protected suite.                                                                                                                                 |
+| 6 — workspace build strategy        | **Deleted.** There is no second package to build.                                                                                                                 |
+| 7 — CSRF, cookie topology           | **Deleted.** Better Auth owns sessions, CSRF and rotation; running our own alongside it would give the app two session mechanisms that agree only by coincidence. |
+| 8 — spec amendments doc             | **Deleted.** It amended v1 sections that no longer exist.                                                                                                         |
+
+Everything deleted is recoverable at tag **`v1-express-final`**.
+
+Tests: 200 → 198. Removed 31 Express tests (app 10, csrf 15, health 6) and 13
+nonce-guard tests; added 42 (env 9, db 8, security-headers 25).
 
 ## Verify, don't assume
 
-The specification's standard is _"do not claim functionality works without
-testing it."_ Run it and look: `npm run build && npm run start -w web`, then the
-`browser-automation` skill for the console report and the accessibility tree.
-That is how the contrast failures, the redundant logo link, the NUL bytes in
-`common.ts` and the missing-CSP-under-curl bug were all found — none of them
-showed up in a typecheck, a lint or a passing build.
+The standard is _"do not claim functionality works without testing it."_ Run it
+and look: `npm run build && npm run start`, then the `browser-automation` skill
+for the console report and the accessibility tree.
+
+That is how the contrast failures, the NUL bytes, the missing-CSP-under-curl bug,
+the WebKit `upgrade-insecure-requests` failure (twice), the hash-CSP
+incompatibility, the ignored-`unsafe-inline` trap, the self-referential rewrite
+and the stale secret-scanner path were all found. None of them showed up in a
+typecheck, a lint, or a passing build.
