@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     /* Strictness. `strict` alone still permits a surprising amount of unsafety;
@@ -33,9 +29,7 @@
        which is what lets a Server Action and the form that calls it validate
        against the same schema object rather than two copies of it. */
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
@@ -46,11 +40,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": [
-    "node_modules",
-    ".next",
-    "dist",
-    "playwright-report",
-    "test-results"
-  ]
+  "exclude": ["node_modules", ".next", "dist", "playwright-report", "test-results"]
 }

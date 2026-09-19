@@ -94,7 +94,7 @@ describe('private documents must never be shared-cached', () => {
       expect(
         value.includes(directive),
         `A session-rendered document must not be shared-cacheable, but Cache-Control contained "${directive}". ` +
-          'A shared cache holding one would serve one person\'s favourites to the next visitor.',
+          "A shared cache holding one would serve one person's favourites to the next visitor.",
       ).toBe(false);
     }
   });

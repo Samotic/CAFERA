@@ -1,4 +1,3 @@
-
 /**
  * ============================================================================
  * DECISION RECORD — read before changing the CSP or any Cache-Control here
@@ -111,7 +110,8 @@ export const PRIVATE_CACHE_CONTROL = 'private, no-store, must-revalidate';
  * Public HTML. Short browser TTL, long shared TTL, and a stale window so a
  * revalidation never makes a visitor wait.
  */
-export const PUBLIC_CACHE_CONTROL = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
+export const PUBLIC_CACHE_CONTROL =
+  'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
 
 export function isPrivateRoute(pathname: string): boolean {
   return PRIVATE_ROUTE_PREFIXES.some(
@@ -132,13 +132,7 @@ export function isPrivateRoute(pathname: string): boolean {
  * is one). Neither is script execution — the prohibition is about executing
  * injected code, which `script-src` governs.
  */
-export function buildCsp({
-  isDev,
-  isSecure,
-}: {
-  isDev: boolean;
-  isSecure: boolean;
-}): string {
+export function buildCsp({ isDev, isSecure }: { isDev: boolean; isSecure: boolean }): string {
   const directives: Record<string, string[]> = {
     'default-src': ["'self'"],
     /**
