@@ -1,3 +1,5 @@
+import { env } from '@/lib/env';
+
 /**
  * Site-wide constants. Anything that appears in metadata, structured data or a
  * canonical URL is defined once here so a domain change is a one-line change.
@@ -12,8 +14,12 @@ export const SITE = {
    * The public origin. Absolute URLs are required for Open Graph, canonicals and
    * the sitemap, so this must be set in production — a relative canonical is
    * silently ignored by crawlers.
+   *
+   * Read through the validated `env` object, not `process.env`: an unset
+   * variable is an empty string, and `?? 'http://localhost:3000'` would have
+   * passed it through as a real origin, shipping empty canonicals to production.
    */
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+  url: env.NEXT_PUBLIC_SITE_URL,
   locale: 'en_US',
   twitter: '@cafera',
 } as const;

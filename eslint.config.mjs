@@ -23,6 +23,26 @@ const eslintConfig = defineConfig([
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       eqeqeq: ['error', 'smart'],
       'prefer-const': 'error',
+
+      /**
+       * `process.env` is read in exactly one place: src/lib/env.ts.
+       *
+       * An unset variable is an empty string, which is not nullish, so `??`
+       * passes it through as a real value. That produced a rewrite destination
+       * pointing at itself and a silent 404 on every API call. Reading through
+       * the validated `env` object means an empty variable fails at load with
+       * its own name instead of travelling into a URL or a signing key.
+       */
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'process',
+          property: 'env',
+          message:
+            'Import { env } from "@/lib/env" instead. Direct process.env access lets an empty-string variable pass as a real value.',
+        },
+      ],
+
       'no-restricted-syntax': [
         'error',
         {
@@ -47,8 +67,15 @@ const eslintConfig = defineConfig([
   },
 
   {
+    /* The env module is the one place process.env may be read, and the build
+       config runs before the module graph exists. */
+    files: ['src/lib/env.ts', 'next.config.ts', 'playwright.config.ts', 'vitest.config.mts'],
+    rules: { 'no-restricted-properties': 'off' },
+  },
+
+  {
     files: ['**/*.test.ts', '**/*.test.tsx', 'e2e/**/*.ts', 'vitest.setup.ts'],
-    rules: { 'no-console': 'off' },
+    rules: { 'no-console': 'off', 'no-restricted-properties': 'off' },
   },
 
   globalIgnores([
