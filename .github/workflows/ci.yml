@@ -12,11 +12,18 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20.11.0'
+  NODE_VERSION: '22.x'
 
 jobs:
-  quality:
-    name: Typecheck, lint and unit tests
+  # One job, in order, because each step is only meaningful if the previous one
+  # passed — there is no point running Playwright against a build that does not
+  # typecheck.
+  #
+  # `typecheck` leads deliberately. A type error reached main once because the
+  # pre-commit hook ran prettier and eslint but not tsc, and a hook is bypassable
+  # with --no-verify in any case. CI is the copy that cannot be skipped.
+  verify:
+    name: Typecheck, lint, test, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,15 +33,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - run: npm ci
-
-      # `shared` compiles to dist and both workspaces import it from there, so
-      # nothing else can typecheck until it exists.
-      - name: Build shared contracts
-        run: npm run build -w @cafera/shared
-
-      - name: Formatting
-        run: npm run format:check
+      - name: Install
+        run: npm ci
 
       - name: Typecheck
         run: npm run typecheck
@@ -42,60 +42,40 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Formatting
+        run: npm run format:check
+
       - name: Unit and integration tests
         run: npm test
-        env:
-          # mongodb-memory-server spins up a real mongod, so no Atlas
-          # credentials are needed and CI can never touch production data.
-          NODE_ENV: test
 
-  build:
-    name: Production build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - run: npm ci
-      - run: npm run build
+      - name: Build
+        run: npm run build
         env:
-          # Placeholder values: the build must not depend on real secrets, and
-          # failing here proves it does.
-          NEXT_PUBLIC_API_URL: https://api.example.com
+          # Placeholder values. The build must not depend on real secrets, and
+          # failing here is how we find out that it does.
+          MONGODB_URI: mongodb://127.0.0.1:27017/cafera_ci
           NEXT_PUBLIC_SITE_URL: https://example.com
 
+      # Server and client code now share one tree, so an accidental import
+      # crosses the boundary silently. This matters more than it did under the
+      # workspace split, not less.
       - name: Assert no secrets in the client bundle
-        run: node scripts/check-bundle-secrets.mjs
-
-  e2e:
-    name: Playwright end-to-end
-    runs-on: ubuntu-latest
-    needs: quality
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - run: npm ci
-      - run: npm run build -w @cafera/shared
+        run: npm run scan:secrets
 
       - name: Install browsers
         run: npx playwright install --with-deps chromium firefox webkit
-        working-directory: web
 
-      - name: Run end-to-end and accessibility suites
-        run: npm run test:e2e -w web
+      - name: End-to-end and accessibility suites
+        run: npm run test:e2e
+        env:
+          MONGODB_URI: mongodb://127.0.0.1:27017/cafera_ci
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: web/playwright-report/
+          path: playwright-report/
           retention-days: 7
 
   audit:
@@ -108,5 +88,5 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      # Advisory-level findings should not block a merge; exploitable ones must.
+      # Advisory findings should not block a merge; exploitable ones must.
       - run: npm audit --audit-level=high

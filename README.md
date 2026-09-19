@@ -67,199 +67,145 @@ timings, and a distraction-free brewing mode that runs alongside you at the mach
 
 **Frontend**
 
-|           |                                                        |
-| --------- | ------------------------------------------------------ |
-| Framework | Next.js 16 (App Router) with React 19                  |
-| Language  | TypeScript, `strict` — no `any` in committed code      |
-| Styling   | Tailwind CSS v4 over a CSS custom-property token layer |
-| State     | Redux Toolkit + RTK Query                              |
-| Animation | Framer Motion                                          |
-| Forms     | react-hook-form + zod                                  |
-| Icons     | lucide-react                                           |
-| Images    | `next/image` with AVIF/WebP and blur placeholders      |
+|           |                                                           |
+| --------- | --------------------------------------------------------- |
+| Framework | Next.js 16 (App Router) with React 19                     |
+| Language  | TypeScript, `strict` — no `any` in committed code         |
+| Styling   | Tailwind CSS v4 over a CSS custom-property token layer    |
+| State     | Server Components; Redux Toolkit for client-only UI state |
+| Animation | Framer Motion                                             |
+| Forms     | react-hook-form + zod                                     |
+| Icons     | lucide-react                                              |
+| Images    | `next/image` with AVIF/WebP and blur placeholders         |
 
 **Backend**
 
-|           |                                                                      |
-| --------- | -------------------------------------------------------------------- |
-| Runtime   | Node.js 20+                                                          |
-| Framework | Express 5, TypeScript                                                |
-| Database  | MongoDB Atlas via Mongoose                                           |
-| Auth      | JWT access token (memory) + rotating refresh token (httpOnly cookie) |
-| Passwords | bcrypt, cost ≥ 12                                                    |
-| Logging   | pino, with credential redaction                                      |
-| Media     | Cloudinary, signed uploads                                           |
+|          |                                                        |
+| -------- | ------------------------------------------------------ |
+| Runtime  | Node.js 22 on Vercel functions                         |
+| Data     | Server Components and Server Actions — no REST service |
+| Database | MongoDB Atlas via Mongoose                             |
+| Auth     | Better Auth (Phase 3)                                  |
+| Media    | Vercel Blob (Phase 4)                                  |
 
 **Quality**
 
-Vitest · Testing Library · Supertest · mongodb-memory-server · Playwright · axe-core · ESLint · Prettier · Husky · GitHub Actions
+Vitest · Testing Library · Playwright · axe-core · ESLint · Prettier · Husky · GitHub Actions
 
 ---
 
 ## Architecture
 
-CAFERA is an npm-workspaces monorepo with three packages:
+CAFERA is **one Next.js application** deployed to Vercel. There is no separate
+API service and no workspaces — server code, client code and the contracts
+between them all live under `src/`.
 
 ```
-cafera/
-├── shared/     @cafera/shared — types, zod contracts, domain constants, pure utilities
-├── server/     Express + TypeScript REST API
-└── web/        Next.js App Router frontend
+src/
+├── app/          App Router — (app) chrome, (auth) bare, (focus) full-viewport
+├── components/   ui/ primitives, recipe/, layout/, brand/
+├── hooks/
+├── lib/
+│   ├── constants/   domain vocabulary and site constants
+│   ├── utils/       pure functions shared by server and client
+│   ├── validation/  zod schemas — the single source of validation truth
+│   ├── db.ts        Mongoose connection, sized for serverless
+│   ├── env.ts       the only place process.env is read
+│   └── auth.ts      Phase 3 — Better Auth
+├── models/       Mongoose models
+├── types/
+└── proxy.ts      headers for private routes only
 ```
 
-### How `shared/` is consumed — and what a host must run
+### Why one tree
 
-`shared/` is a **built package** (strategy B), not TypeScript source consumed
-directly. It emits `dist/` with `exports`, `types` and `main` pointing at the
-compiled output, and is marked `sideEffects: false` so bundlers can drop the
-exports an app does not reference — without which importing one constant from the
-barrel drags in every zod schema.
+The frontend validates a registration form and the server validates the same
+registration. Written twice, those rules _will_ drift — and the half that drifts
+silently is the client, so the server ends up the only real enforcement point and
+nobody notices until it rejects something the UI accepted.
 
-The built form is required rather than preferred: Express has no bundler to paper
-over module resolution, so it needs real emitted JavaScript. Shipping source
-would work for Next and fail for the API.
-
-**Host configuration — set these explicitly, do not rely on framework detection:**
-
-| Setting                | Value                                                        |
-| ---------------------- | ------------------------------------------------------------ |
-| Root directory         | the repository root (**not** `web/` or `server/`)            |
-| Install command        | `npm ci`                                                     |
-| Build command (web)    | `npm run build -w @cafera/shared && npm run build -w web`    |
-| Build command (API)    | `npm run build -w @cafera/shared && npm run build -w server` |
-| Start command (API)    | `npm run start -w server`                                    |
-| Output directory (web) | `web/.next`                                                  |
-
-Installing from a workspace _subdirectory_ is the failure mode to avoid: npm then
-cannot see the sibling package, and `@cafera/shared` fails to resolve at build
-time with an error that has no local reproduction.
-
-### Why `shared/` exists
-
-The frontend validates a registration form and the backend validates the same
-registration request. If those two rules are written twice they _will_ drift, and
-the half that drifts silently is the client — which means the server ends up
-being the only real enforcement point and nobody notices until it rejects
-something the UI accepted.
-
-So every contract is declared once in `shared/` and imported by both sides:
-TypeScript types, zod schemas, enums, limits, and the pure functions that must
-agree across the wire (ingredient scaling, slug generation, the deterministic
-daily rotation). The server re-runs every schema regardless — the client is a
-convenience, never a control.
+With one tree there is nothing to synchronise: a Server Action and the form that
+calls it import the same schema object. This is the main thing the collapse from
+three workspaces bought.
 
 ### Route groups
 
 ```
-web/src/app/
+src/app/
 ├── (app)/      Header + bottom nav + footer — Home, Discover, recipes, Favorites, My Café, Profile
-├── (auth)/     Centred single column, no navigation — login, register, password reset
-└── (focus)/    Full-viewport, no chrome — /welcome onboarding and Brew Mode
+├── (auth)/     Centred single column, no navigation
+└── (focus)/    Full-viewport, no chrome — /welcome and Brew Mode
 ```
 
-This departs slightly from a single `(marketing)`/`(app)` split. Brew Mode and the
-auth pages need genuinely different chrome from the browsing screens, and a route
-group is the only way to give sibling routes different layouts. Grouping by
-_chrome_ rather than by _audience_ is what makes that possible.
+Grouped by _chrome_ rather than by audience: Brew Mode and the auth pages need
+genuinely different layouts from the browsing screens, and a route group is the
+only way to give sibling routes different ones.
 
-### Request lifecycle
+### Rendering and caching
 
-```
-Browser
-  │  fetch with credentials + CSRF header
-  ▼
-Express  helmet → CORS allow-list → body limit → sanitiser → rate limit
-  │      → auth middleware (verifies JWT, derives identity)
-  │      → authorisation middleware (ownership / role)
-  │      → zod validation (shared contract)
-  │      → controller (thin) → service (business logic) → Mongoose model
-  ▼
-Single response envelope: { success: true, data } | { success: false, error }
-```
+| Routes                                                 | Rendering           | Cache                       |
+| ------------------------------------------------------ | ------------------- | --------------------------- |
+| `/`, `/discover`, `/recipes/*`                         | Static, prerendered | Shared-cacheable at the CDN |
+| `/profile`, `/favorites`, `/my-cafe`, `/welcome`, auth | Session-rendered    | `private, no-store`         |
 
-Business logic never lives in a route handler. Controllers parse and respond;
-services decide. That boundary is what makes the services testable without HTTP.
-
----
+Both directions are enforced by tests. A public page that gains `no-store`
+silently disables the CDN; a private page that becomes shared-cacheable serves
+one person's data to the next visitor.
 
 ## Getting started
 
-**Prerequisites** — Node.js ≥ 20.11, npm ≥ 10, and a MongoDB Atlas cluster (or a
+**Prerequisites** — Node.js ≥ 22, npm ≥ 10, and a MongoDB Atlas cluster (or a
 local `mongod` for development).
 
 ```bash
 git clone <repository-url> cafera
 cd cafera
 npm install
+cp .env.example .env.local
+npm run dev
 ```
 
-`shared` compiles to `dist/` and both other packages import it from there, so it
-must be built before anything else will typecheck:
+That is the whole setup. There is no workspace to build first.
 
-```bash
-npm run build -w @cafera/shared
-```
+### Commands
 
-Create the two environment files:
-
-```bash
-cp server/.env.example server/.env
-cp web/.env.example    web/.env.local
-```
-
-Generate real JWT secrets — the placeholders in the template will not pass
-validation:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"   # run twice
-```
-
-Then run both applications:
-
-```bash
-npm run dev:server    # API   → http://localhost:4000
-npm run dev:web       # Web   → http://localhost:3000
-```
-
-### Useful commands
-
-| Command                                  | What it does                                                      |
-| ---------------------------------------- | ----------------------------------------------------------------- |
-| `npm run dev:web` / `npm run dev:server` | Start one application                                             |
-| `npm run build`                          | Build all three packages in dependency order                      |
-| `npm run typecheck`                      | Typecheck every workspace                                         |
-| `npm run lint`                           | Lint every workspace                                              |
-| `npm test`                               | Unit and integration tests everywhere                             |
-| `npm run test:e2e -w web`                | Playwright, across Chromium, Firefox and WebKit                   |
-| `npm run seed`                           | Populate the database (`npm run seed:fresh -w server` to rebuild) |
-| `npm run analyze -w web`                 | Production build with the bundle analyser                         |
-| `node scripts/check-bundle-secrets.mjs`  | Fail if anything secret-shaped reached the client bundle          |
-
----
+| Command                | What it does                                             |
+| ---------------------- | -------------------------------------------------------- |
+| `npm run dev`          | Development server                                       |
+| `npm run build`        | Production build                                         |
+| `npm start`            | Serve the production build                               |
+| `npm run typecheck`    | `tsc --noEmit`                                           |
+| `npm run lint`         | ESLint                                                   |
+| `npm test`             | Vitest                                                   |
+| `npm run test:e2e`     | Playwright — Chromium, Firefox, WebKit, mobile Safari    |
+| `npm run scan:secrets` | Fail if anything secret-shaped reached the client bundle |
+| `npm run analyze`      | Production build with the bundle analyser                |
 
 ## Environment variables
 
-Both templates are committed; neither `.env` nor `.env.local` ever is.
+One file: `.env.local`, from the committed `.env.example`. It is never itself
+committed.
 
-**`server/.env`** — the whole trust boundary lives here: `MONGODB_URI`,
-`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `BCRYPT_ROUNDS`, cookie flags, the CORS
-allow-list, rate limits, Cloudinary credentials and the optional LLM key. See
-[`server/.env.example`](server/.env.example) for the annotated list.
+Every variable is validated by `src/lib/env.ts` at module load, with `.min(1)` on
+every required string. That is not ceremony: **an unset variable in a `.env` file
+is an empty string, not `undefined`**, so `??` passes it through as though it
+were configuration. That exact bug made an API rewrite resolve to a path pointing
+at itself, and every call 404'd with nothing logged. An ESLint rule bans
+`process.env` outside that one module so it cannot come back.
 
-`config/env.ts` validates all of it at boot and **refuses to start** on anything
-missing or unsafe. Production carries extra rules that development does not:
-`COOKIE_SECURE` must be true, CORS origins must be HTTPS and must not contain a
-wildcard, and the two JWT secrets must differ. A server that boots with an
-undefined secret signs tokens with the string `"undefined"`, and that failure
-surfaces months later as an incident rather than immediately as a crash.
+| Variable                | Purpose                                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MONGODB_URI`           | Atlas connection string. Checked for a host — `.url()` alone accepts `mongodb+srv://`, which has none.                                                 |
+| `NEXT_PUBLIC_SITE_URL`  | Public origin, for canonicals, Open Graph and the sitemap.                                                                                             |
+| `BETTER_AUTH_SECRET`    | Phase 3. Optional until then, but the 32-character floor applies now: a short signing secret does not fail, it quietly weakens every session it signs. |
+| `BETTER_AUTH_URL`       | Phase 3.                                                                                                                                               |
+| `BLOB_READ_WRITE_TOKEN` | Phase 4, Vercel Blob.                                                                                                                                  |
 
-**`web/.env.local`** — contains no secrets at all, by design. Only
-`NEXT_PUBLIC_`-prefixed variables reach the browser, and everything with that
-prefix is public: visible in DevTools to anyone who loads the site. The browser
-talks only to the CAFERA API, which holds every credential.
-`scripts/check-bundle-secrets.mjs` enforces this in CI.
-
----
+Only `NEXT_PUBLIC_`-prefixed variables reach the browser, and everything with
+that prefix is public — visible in DevTools to anyone who loads the site.
+`npm run scan:secrets` enforces that against the built output, and now matters
+more than it did: server and client code share one tree, so an accidental import
+crosses the boundary silently rather than failing to resolve.
 
 ## Database setup and seeding
 
@@ -271,7 +217,7 @@ talks only to the CAFERA API, which holds every credential.
 
 ```bash
 npm run seed              # idempotent — safe to run repeatedly
-npm run seed:fresh -w server   # drops and rebuilds from scratch
+npm run seed:fresh             # drops and rebuilds from scratch
 ```
 
 The seed creates 25 complete recipes with real ingredients, ratios and brewing
@@ -292,118 +238,55 @@ index on `refreshTokens.expiresAt`.
 
 ## API overview
 
-Base URL `/api`. Every response uses one envelope:
+There is no REST API. Reads happen in Server Components and mutations in Server
+Actions, so there is no HTTP surface to version, document or secure separately —
+and no second place for validation to drift to.
 
-```jsonc
-{ "success": true,  "data": { } }
-{ "success": false, "error": { "code": "VALIDATION_ERROR", "message": "…", "fields": [], "requestId": "…" } }
+Actions return a discriminated result rather than throwing:
+
+```ts
+type ActionResult<T> =
+  | { ok: true; data: T }
+  | {
+      ok: false;
+      error: { code: ApiErrorCode; message: string; fields?: FieldError[] };
+    };
 ```
 
-Clients narrow on `success` alone and map `code` to user-facing copy — raw server
-messages are never rendered.
-
-| Area           | Endpoints                                                                                                                          |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Auth           | `POST /auth/register` `/auth/login` `/auth/logout` `/auth/refresh` `/auth/forgot-password` `/auth/reset-password` · `GET /auth/me` |
-| Recipes        | `GET /recipes` `/recipes/:slug` `/recipes/search` · `GET /categories`                                                              |
-| Favourites     | `GET /favorites` · `POST`/`DELETE /favorites/:recipeId`                                                                            |
-| Reviews        | `GET`/`POST /reviews/:recipeId` · `PUT`/`DELETE /reviews/:reviewId`                                                                |
-| Users          | `GET`/`PUT /users/profile` · `PUT /users/preferences` · `POST /users/avatar`                                                       |
-| My Café        | `/my-cafe/recently-viewed` `/my-cafe/history` `/my-cafe/want-to-try`                                                               |
-| Custom recipes | Full CRUD under `/custom-recipes`                                                                                                  |
-| AI             | `POST /ai/ask` (feature-flagged)                                                                                                   |
-| Ops            | `GET /health/live` · `GET /health/ready` · `GET /health` _(deprecated alias)_                                                      |
-
-`GET /api/health/ready` checks every dependency and returns **503** when one is
-unreachable — a service answering HTTP in front of a dead database is down from
-every user's point of view, and a monitor needs to see that.
-
-`GET /api/health/live` answers a different question: "is this process alive?" It
-never touches a dependency, and always returns 200. Container platforms restart a
-process whose liveness probe fails, so a liveness check that consults the database
-turns a transient Atlas failover into a restart loop. See
-[Health probes](#health-probes--wire-these-to-the-right-urls) for which probe
-points where.
-
----
+A thrown error in a Server Action reaches the client as an opaque digest with no
+field detail — right for an unexpected fault, useless for "that email is already
+registered". Callers narrow on `ok` and map `code` to copy; raw server messages
+are never rendered.
 
 ## Security
 
-Security requirements were treated as non-negotiable rather than as a checklist.
+**Sessions** are Better Auth's (Phase 3). It owns issuance, storage, CSRF and
+rotation. Running a hand-rolled scheme alongside it would give the app two
+session mechanisms that agree only by coincidence, so the v1 JWT/refresh-cookie
+implementation was removed rather than kept "just in case" — it is recoverable at
+tag `v1-express-final`.
 
-### Cookie topology: same-origin via proxy
+> **No token is ever written to `localStorage` or `sessionStorage`.** Any XSS can
+> read web storage, so a token stored there is an account-takeover primitive. An
+> ESLint rule blocks it, one audited module is the only code allowed near web
+> storage, and `npm run scan:secrets` fails the build on a token-shaped key in
+> the built bundle.
 
-The browser only ever talks to the web origin. `/api/*` is rewritten by Next to
-the Express service, so every request is first-party and the refresh cookie is a
-first-party cookie.
+**Content Security Policy.** Static, served from `next.config.ts`. `script-src`
+carries `'unsafe-inline'` — a deliberate, measured trade rather than an
+oversight, and the reasoning is recorded in full in `src/lib/security-headers.ts`
+and in CLAUDE.md. Short version: a hash-based policy was implemented and tested
+in a real browser, and the App Router's per-page inline flight scripts make it
+unworkable. Everything else stays locked: no `unsafe-eval`, `object-src 'none'`,
+`base-uri 'none'`, `frame-ancestors 'none'`, and a `connect-src` naming only this
+origin.
 
-**The exact attribute string this deployment sets** (derived by
-`describeRefreshCookie()`, so this documentation cannot drift from the code):
-
-```
-cafera_rt=<token>; HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=2592000
-```
-
-`Secure` is omitted in local development only; `config/env.ts` refuses to boot in
-production without it.
-
-> **Never use a cross-site split.** A frontend on `*.vercel.app` talking to an API
-> on `*.railway.app` forces `SameSite=None`, which makes the refresh cookie a
-> **third-party cookie** — blocked outright by Safari's ITP and by Firefox's Total
-> Cookie Protection. Login appears to succeed and the session silently fails to
-> persist, for a large share of real users, on browsers you are least likely to be
-> developing in. A test asserts this configuration can never be reached.
-
-Choosing same-origin is also what makes `SameSite=Strict` viable — the strictest
-setting available, and one a cross-site setup could not use at all.
-
-**Sessions.** The access token is short-lived (15 min), returned in the response
-body, and held **in memory only**. The refresh token is long-lived and lives in the
-`httpOnly` cookie above, which JavaScript cannot read. Refresh tokens rotate on
-every use with reuse detection: a token presented twice invalidates the entire
-family, which is what turns a stolen refresh token from a permanent foothold into
-a detectable, revoked one.
-
-> **No token is ever written to `localStorage` or `sessionStorage`.** This is the
-> single most important difference between a web client and a mobile one — any XSS
-> on the page can read web storage, so a token stored there is an account-takeover
-> primitive. An ESLint rule fails the build on any attempt, and an E2E test asserts
-> both storage areas stay clean after login.
-
-**CSRF.** Mounted once at `/api`, so a new endpoint is protected by default
-rather than protected if someone remembers. Two independent checks: an
-`Origin` / `Sec-Fetch-Site` test that a page on another origin cannot forge, and a
-double-submit token compared in **constant time** (a plain `===` leaks, through
-timing, how many leading characters matched). `SameSite=Strict` is a third layer
-but is not relied on alone — a defence that evaporates on an unusual client is not
-a defence. Safe methods are exempt; health probes are mounted before the gate
-because they carry no cookies.
-
-**Other controls.** A nonce-based CSP with no
-`unsafe-inline` · HSTS, `X-Content-Type-Options`, `Referrer-Policy`,
-`Permissions-Policy` and `X-Frame-Options: DENY` · a strict CORS allow-list with
-credentials (never `*`) · rate limiting, stricter on auth routes and keyed on IP
-_and_ email so credential stuffing is caught in both directions · NoSQL injection
-defence in two layers (request-boundary key stripping and Mongoose
-`sanitizeFilter`) · a 100 KB body limit · MIME and magic-byte validation on
-uploads · open-redirect protection on every post-auth redirect · and identical
-forgot-password responses whether or not an account exists, so the endpoint cannot
-enumerate users.
-
-Identity is derived only from a verified token. No endpoint trusts a
-client-supplied user id.
-
-### Known trade-off: nonce CSP vs. static rendering
-
-§25 mandates a nonce-based CSP with no `unsafe-inline`. In the App Router a
-per-request nonce necessarily means per-request HTML, which rules out literal ISR
-and `generateStaticParams` for recipe pages. The mandatory security requirement
-wins, and ISR's _intent_ is preserved one layer down: recipe reads are cached and
-tag-invalidated, so the database is not touched per request and TTFB stays flat.
-Relaxing the CSP would restore static HTML — a deliberate decision, not an
-oversight.
-
----
+**Other controls.** HSTS, `X-Content-Type-Options`, `Referrer-Policy`,
+`Permissions-Policy`, `X-Frame-Options: DENY` · NoSQL injection defence via
+Mongoose `sanitizeFilter` · zod validation on every Server Action input ·
+`upgrade-insecure-requests` gated on the actual deployment rather than on
+`NODE_ENV`, because on a plain-HTTP origin it renders the page completely
+unstyled in WebKit.
 
 ## Performance
 
@@ -414,7 +297,7 @@ Server Components by default with `'use client'` only where interaction demands
 it · route-level code splitting with heavy client components dynamically imported
 · `next/font` self-hosted, subset and preloaded · `next/image` with explicit
 dimensions, correct `sizes` and a blur placeholder on every image so nothing
-shifts · cached, tag-invalidated recipe reads · RTK Query deduplication · API
+shifts · static prerendering with CDN caching for public pages · API
 pagination everywhere with `lean()` reads over indexed fields · and a bundle
 analyser check before release.
 
@@ -443,116 +326,89 @@ its colour, and every filter chip exposes `aria-pressed`.
 
 ## Testing
 
-| Layer         | Tooling                                    | Covers                                                                                                         |
-| ------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| Shared logic  | Vitest                                     | Ingredient scaling and rounding, unit conversion, ISO durations, slugs, the daily rotation, every zod contract |
-| API           | Vitest + Supertest + mongodb-memory-server | Auth and token refresh, filtering and pagination, favourites, authorisation, the security middleware stack     |
-| Components    | Vitest + Testing Library                   | The accessibility contracts of the primitives                                                                  |
-| End-to-end    | Playwright (Chromium, Firefox, WebKit)     | Register → onboard → browse → favourite → brew → review, plus URL-state and session persistence                |
-| Accessibility | `@axe-core/playwright`                     | Every primary route, failing the build on violations                                                           |
+| Layer          | Tooling                  | Covers                                                                                                         |
+| -------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Shared logic   | Vitest                   | Ingredient scaling and rounding, unit conversion, ISO durations, slugs, the daily rotation, every zod contract |
+| Infrastructure | Vitest                   | Environment validation, serverless connection pooling and cache behaviour, the two-directional cache guard     |
+| Components     | Vitest + Testing Library | The accessibility contracts of the primitives, dialog behaviour and scroll locking                             |
+| Design system  | Vitest                   | 81 contrast assertions over the real `globals.css`, both theme halves                                          |
+| End-to-end     | Playwright               | Chromium, Firefox, WebKit and mobile Safari                                                                    |
 
 ```bash
-npm test                    # everything
-npm test -w server          # one workspace
-npm run test:e2e -w web     # browsers
+npm test                    # 198 unit and integration tests
+npm run test:e2e            # 39 end-to-end tests, four browser engines
 ```
 
----
+The cross-browser run is not optional decoration. Every engine-specific bug in
+this codebase — WebKit rendering unstyled under `upgrade-insecure-requests`,
+Safari dropping focus after a programmatic `dialog.close()`, Safari not focusing
+a button on click — was invisible in Chromium.
 
 ## Deployment
 
-| Piece    | Target                                                                | Region                     |
-| -------- | --------------------------------------------------------------------- | -------------------------- |
-| Frontend | Vercel                                                                | `fra1` (Frankfurt)         |
-| API      | Railway / Render / Fly.io                                             | `europe-west4` / Frankfurt |
-| Database | MongoDB Atlas, IP allow-list, least-privilege user, automated backups | AWS `eu-central-1`         |
-| Media    | Cloudinary, signed uploads                                            | CDN, global                |
+One target: **Vercel**. No second service to deploy or keep in step.
+
+| Piece       | Target                                                      | Region             |
+| ----------- | ----------------------------------------------------------- | ------------------ |
+| Application | Vercel (Next.js)                                            | `fra1` — Frankfurt |
+| Database    | MongoDB Atlas, IP allow-list, least-privilege user, backups | AWS `eu-central-1` |
+| Media       | Vercel Blob                                                 | —                  |
 
 ### Region pinning is mandatory, not a default
 
-All three services are pinned to **one region in Frankfurt**. This is stated
-explicitly rather than left to platform defaults, because the defaults do not
-agree with each other: Vercel functions default to `iad1` (Washington) and Atlas
-free tiers frequently land in `us-east-1`, which silently puts an ocean between
-the API and its database.
+Stated explicitly rather than left to platform defaults, because the defaults do
+not agree: Vercel functions default to `iad1` (Washington) and Atlas free tiers
+frequently land in `us-east-1`, silently putting an ocean between the functions
+and the database. A cross-region cluster costs **100 ms or more per query**, paid
+again for every query a page issues.
 
-The reason is the request chain on a recipe page:
+### Connection pooling is sized for functions, not for a server
 
-```
-edge → Next server → Express API → Atlas
-```
+`minPoolSize: 0`, `maxPoolSize: 10`. There is no single long-lived process — as
+many function instances exist as concurrency demands, each with its own pool.
+Holding five warm sockets per instance across a hundred instances is five hundred
+connections, and an Atlas shared tier caps at 500. The failure is not a clean
+refusal; it is random connection errors under load that read like an application
+bug. See `src/lib/db.ts`.
 
-Four hops before first byte. The Atlas hop is the one that varies most, and a
-cross-region cluster adds **100 ms or more per query** — paid again for every
-query a page issues. That, not the rendering mode, is what misses the LCP < 2.0 s
-target in §33.
+### Release checklist
 
-Pooling is configured to match (`server/src/config/database.ts`): one connection
-established per process and reused for its lifetime, `minPoolSize: 5` so warm
-sockets are already open when a request arrives, and the connection _promise_
-cached rather than a boolean so concurrent callers at startup cannot open
-competing pools. Measured locally: cold connect **45 ms**, cached connect
-**0 ms**.
+Real `NEXT_PUBLIC_SITE_URL` · custom domain with HTTPS and HSTS · `robots.txt`
+and a dynamic `sitemap.xml` · structured data validated in Google's Rich Results
+Test · PWA manifest and offline fallback · error tracking · analytics behind a
+consent banner · Privacy Policy and Terms pages · Atlas backups enabled.
 
-> **TTFB baseline: not yet measured.** The four-number breakdown (edge TTFB,
-> Next render, Express handler, Atlas query) requires a real deploy and has not
-> been taken. See [Build status](#build-status).
-
-### Health probes — wire these to the right URLs
-
-This is the part that gets lost, and getting it wrong causes outages rather than
-merely being untidy.
-
-| Probe                       | URL                 | Behaviour                                   |
-| --------------------------- | ------------------- | ------------------------------------------- |
-| Platform **liveness** probe | `/api/health/live`  | Always 200 while the process runs           |
-| Load-balancer traffic gate  | `/api/health/ready` | 200 when dependencies are up, 503 when not  |
-| External **uptime monitor** | `/api/health/ready` | Alerts on a real inability to serve         |
-| _(deprecated)_              | `/api/health`       | Alias of `/ready`, kept for existing probes |
-
-> **The liveness probe must not check the database.** Container platforms kill
-> and restart a process whose liveness probe fails. If that probe checks Atlas, a
-> transient failover — an event Atlas is designed to ride out — restarts a healthy
-> process, drops every in-flight request, and turns a five-second hiccup into a
-> real outage with a cold start on the end. `/live` never touches a dependency,
-> and a test asserts it stays that way.
-
-Verified against the running API: with the database down, `/live` returns 200 and
-`/ready` returns 503.
-
-**Release checklist.** Real `NEXT_PUBLIC_API_URL` (a localhost value ships a site
-that cannot load data — the bundle scanner fails the build on one) · custom domain
-with HTTPS and HSTS preload · cookie domain and `SameSite` correct for the
-frontend/API origin split · CORS allow-list containing only real production
-origins · `robots.txt` and a dynamic `sitemap.xml` · structured data validated in
-Google's Rich Results Test · PWA manifest, service worker and offline fallback ·
-Sentry on both halves · uptime monitoring on `/api/health` · analytics behind a
-consent banner · Privacy Policy and Terms pages · and graceful shutdown confirmed
-on the API so rolling deploys drop nothing in flight.
-
----
+> **TTFB baseline: not yet measured.** The four-number breakdown (edge TTFB, Next
+> render, Atlas query, total load) requires a real deploy. See
+> [Build status](#build-status).
 
 ## Build status
 
-CAFERA is built in the phases set out in the specification. Current state:
+Built in the phases set out in the specification. The project was rescoped from a
+two-service architecture (v1) to a single serverless app (v2); the port is
+complete and the v1 state is recoverable at tag `v1-express-final`.
 
-| Phase                   | Status                                                                                                                                                                                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1 — Foundation**      | ✅ Monorepo, strict TypeScript, ESLint/Prettier/Husky, CI, route skeleton and layouts, design-token system with verified contrast, UI primitives                                                                                                                                |
-| **1b — API foundation** | ✅ Express 5 app, validated environment, security middleware, error envelope, graceful shutdown, health probes (brought forward to keep the workspace coherent)                                                                                                                 |
-| **1.5 — Hardening**     | ✅ Nonce-CSP cache guard, region pinning + pooling, liveness/readiness split, contrast audit of both theme halves, dialog scroll lock + exit transitions verified cross-browser, CSRF + same-origin cookie topology. ⏳ TTFB baseline and host build verification need a deploy |
-| **2 — Core UI**         | ⏳ Brand intro, onboarding, auth pages, Home, Discover, recipe detail, Brew Mode, Favorites, My Café, Profile                                                                                                                                                                   |
-| **3 — Backend**         | ⏳ Models and indexes, full REST API, authentication, shared validation layer                                                                                                                                                                                                   |
-| **4 — Integration**     | ⏳ RTK Query with silent re-auth, route protection, account system, favourites, reviews                                                                                                                                                                                         |
-| **5 — Content**         | ⏳ 25 seeded recipes, imagery in both crops, search and filtering, SEO layer                                                                                                                                                                                                    |
-| **6 — Polish**          | ⏳ Animation, full state coverage, accessibility and performance passes                                                                                                                                                                                                         |
-| **7 — Testing**         | ⏳ Playwright suites, axe in CI, dependency review                                                                                                                                                                                                                              |
-| **8 — Production**      | ⏳ Deployment, PWA, monitoring, legal pages, final QA                                                                                                                                                                                                                           |
+| Phase               | Status                                                                                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **1 — Foundation**  | ✅ Strict TypeScript, ESLint/Prettier/Husky, CI, route skeleton and layouts, design-token system with verified contrast, UI primitives                             |
+| **1.5 — Hardening** | ✅ Contrast audit of both theme halves, dialog scroll lock and exit transitions verified across four browser engines, region pinning                               |
+| **Serverless port** | ✅ Collapsed to one app, Express deleted, static CSP with a two-directional cache guard, serverless connection pooling, whole-environment validation, CI typecheck |
+| **2 — Data layer**  | ⏳ Models, indexes, seed data, Server Actions                                                                                                                      |
+| **3 — Auth**        | ⏳ Better Auth                                                                                                                                                     |
+| **4 — Core UI**     | ⏳ Onboarding, auth pages, Home, Discover, recipe detail, Brew Mode, Favorites, My Café, Profile                                                                   |
+| **5 — Content**     | ⏳ 25 seeded recipes, imagery, search and filtering, SEO layer                                                                                                     |
+| **6 — Polish**      | ⏳ Animation, full state coverage, accessibility and performance passes                                                                                            |
+| **7 — Testing**     | ⏳ Full E2E coverage, axe in CI, dependency review                                                                                                                 |
+| **8 — Production**  | ⏳ Deployment, PWA, monitoring, legal pages, final QA                                                                                                              |
 
-Green today: **67 tests passing** across all three workspaces, clean typecheck,
-clean lint, clean production build, and a passing client-bundle secret scan.
+Green today: **198 unit and integration tests**, **39 end-to-end tests** across
+Chromium, Firefox, WebKit and mobile Safari, clean typecheck, clean lint, clean
+production build, and a passing client-bundle secret scan. `/` prerenders as
+static.
 
----
+**Open, and blocked on access rather than on code:** the deployed TTFB baseline.
+It needs a Vercel deployment, and no credentials are available in the build
+environment. It is not estimated anywhere.
 
 ## Roadmap
 
