@@ -46,7 +46,7 @@ interface MongooseCache {
 }
 
 declare global {
-  // eslint-disable-next-line no-var -- `var` is required for a globalThis declaration
+  /* `var` is required here: a globalThis augmentation cannot use let or const. */
   var __caferaMongoose: MongooseCache | undefined;
 }
 

@@ -69,8 +69,16 @@ const eslintConfig = defineConfig([
   {
     /* The env module is the one place process.env may be read, and the build
        config runs before the module graph exists. */
-    files: ['src/lib/env.ts', 'next.config.ts', 'playwright.config.ts', 'vitest.config.mts'],
-    rules: { 'no-restricted-properties': 'off' },
+    files: [
+      'src/lib/env.ts',
+      'next.config.ts',
+      'playwright.config.ts',
+      'vitest.config.mts',
+      /* Standalone CLI: runs against a built bundle, before any module graph
+         exists, so it has no env module to import. */
+      'scripts/**/*.mjs',
+    ],
+    rules: { 'no-restricted-properties': 'off', 'no-console': 'off' },
   },
 
   {

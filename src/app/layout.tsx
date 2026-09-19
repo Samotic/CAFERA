@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { headers } from 'next/headers';
 import { ThemeScript } from '@/components/theme/ThemeScript';
 import { SITE } from '@/lib/constants/site';
 import { fontVariables } from '@/theme/fonts';
@@ -48,11 +47,7 @@ export const viewport: Viewport = {
   colorScheme: 'light dark',
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  /* proxy.ts mints a per-response nonce so the theme script can run under a CSP
-     that has no `unsafe-inline`. */
-  const nonce = (await headers()).get('x-nonce') ?? undefined;
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
@@ -63,7 +58,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       className={fontVariables}
     >
       <head>
-        <ThemeScript nonce={nonce} />
+        <ThemeScript />
       </head>
       <body className="bg-page text-text min-h-dvh antialiased">
         <a href="#main" className="skip-link sr-only">

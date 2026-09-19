@@ -1,5 +1,11 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
 import type { NextConfig } from 'next';
+import {
+  BASE_SECURITY_HEADERS,
+  buildCsp,
+  PRIVATE_CACHE_CONTROL,
+  PRIVATE_ROUTE_PREFIXES,
+} from './src/lib/security-headers';
 
 /**
  * Remote image hosts.
@@ -38,28 +44,37 @@ const nextConfig: NextConfig = {
      than something to arrange. */
 
   /**
-   * Headers that do not depend on a per-request nonce. The CSP itself is emitted
-   * from proxy.ts, because a nonce must be generated per response and a static
-   * header cannot carry one.
+   * All security headers are static now.
+   *
+   * Under the previous nonce CSP they had to be emitted per response from the
+   * proxy, because a nonce cannot live in a static header. A hash can, which is
+   * what lets the whole policy move here and the HTML become cacheable.
+   *
+   * See src/lib/security-headers.ts for the decision record, including the
+   * warning that applies if a nonce is ever reintroduced.
    */
   async headers() {
+    const isDev = process.env.NODE_ENV !== 'production';
+    const csp = buildCsp({ isDev, isSecure: !isDev });
+
     return [
       {
         source: '/:path*',
         headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
-          },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
-          },
+          ...BASE_SECURITY_HEADERS.map((header) => ({ ...header })),
+          { key: 'Content-Security-Policy', value: csp },
         ],
       },
+      /* Session-rendered routes, listed before the public default so the more
+         specific rule is the one that applies. A shared cache holding one of
+         these would serve one person's favourites to the next visitor. */
+      ...PRIVATE_ROUTE_PREFIXES.flatMap((prefix) => [
+        { source: prefix, headers: [{ key: 'Cache-Control', value: PRIVATE_CACHE_CONTROL }] },
+        {
+          source: `${prefix}/:path*`,
+          headers: [{ key: 'Cache-Control', value: PRIVATE_CACHE_CONTROL }],
+        },
+      ]),
     ];
   },
 
