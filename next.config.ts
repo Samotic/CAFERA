@@ -55,7 +55,22 @@ const nextConfig: NextConfig = {
    */
   async headers() {
     const isDev = process.env.NODE_ENV !== 'production';
-    const csp = buildCsp({ isDev, isSecure: !isDev });
+
+    /**
+     * `isSecure` must mean "actually served over HTTPS", not "built for
+     * production". A static header cannot inspect the request protocol the way
+     * the old proxy could, so it keys on the platform instead: `VERCEL` is set
+     * only in a Vercel deployment, which is always HTTPS.
+     *
+     * Deriving it from NODE_ENV alone reintroduces a bug already fixed once —
+     * `upgrade-insecure-requests` on a plain-HTTP origin rewrites every
+     * subresource to https://, finds no TLS listener, and the page renders
+     * completely unstyled. Chromium and Firefox mask it by exempting loopback;
+     * WebKit does not, so it appears as a total failure of the E2E suite in one
+     * engine only. That is exactly how it was caught, twice.
+     */
+    const isSecure = Boolean(process.env.VERCEL);
+    const csp = buildCsp({ isDev, isSecure });
 
     return [
       {

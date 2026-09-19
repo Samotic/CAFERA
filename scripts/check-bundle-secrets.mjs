@@ -15,7 +15,9 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import process from 'node:process';
 
-const CLIENT_DIR = join(process.cwd(), 'web', '.next', 'static');
+/* Single app at the repository root since the monorepo collapse — there is no
+   web/ workspace any more. */
+const CLIENT_DIR = join(process.cwd(), '.next', 'static');
 
 /**
  * Patterns that must never appear in client-side JavaScript. Each pairs a
@@ -104,7 +106,7 @@ for await (const file of walk(CLIENT_DIR)) {
 }
 
 if (scanned === 0) {
-  console.error('No client bundle found at web/.next/static — run `next build` first.');
+  console.error('No client bundle found at .next/static — run `next build` first.');
   process.exit(1);
 }
 
