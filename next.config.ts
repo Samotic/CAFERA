@@ -26,15 +26,21 @@ const nextConfig: NextConfig = {
     // Matches the layout breakpoints in theme/breakpoints.ts.
     deviceSizes: [360, 480, 640, 768, 1024, 1280, 1536, 1920],
     imageSizes: [64, 96, 128, 192, 256, 384],
-    remotePatterns: cloudinaryCloudName
-      ? [
-          {
-            protocol: 'https',
-            hostname: 'res.cloudinary.com',
-            pathname: `/${cloudinaryCloudName}/**`,
-          },
-        ]
-      : [],
+    remotePatterns: [
+      {
+        protocol: 'https' as const,
+        hostname: 'images.unsplash.com',
+      },
+      ...(cloudinaryCloudName
+        ? [
+            {
+              protocol: 'https' as const,
+              hostname: 'res.cloudinary.com',
+              pathname: `/${cloudinaryCloudName}/**`,
+            },
+          ]
+        : []),
+    ],
   },
 
   /* No `rewrites()`. It existed only to proxy /api/* to the separate Express

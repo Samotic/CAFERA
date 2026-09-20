@@ -4,6 +4,8 @@ import { CATEGORY_META } from '@/lib/constants/categories';
 import { SITE_TAGLINE_PARTS } from '@/lib/constants/site';
 import { ButtonLink } from '@/components/ui/Button';
 import { ChipLink } from '@/components/ui/Chip';
+import { RecipeCard } from '@/components/recipe/RecipeCard';
+import { RECIPE_SEED } from '@/lib/seed/recipes';
 
 /**
  * Home.
@@ -93,6 +95,39 @@ export default function HomePage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="content-container pb-20" aria-labelledby="home-featured-heading">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-accent-text text-xs font-semibold uppercase tracking-[0.22em]">
+              Start here
+            </p>
+            <h2
+              id="home-featured-heading"
+              className="font-display mt-2 text-[length:var(--text-display-sm)] font-semibold"
+            >
+              Good coffee, no guesswork.
+            </h2>
+          </div>
+          <Link
+            href="/discover"
+            className="text-accent-text hidden text-sm font-semibold sm:inline-flex"
+          >
+            View all recipes <ArrowRight aria-hidden className="ml-1 size-4" />
+          </Link>
+        </div>
+        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {RECIPE_SEED.slice(0, 4).map((recipe) => (
+            <RecipeCard key={recipe.slug} recipe={recipe} />
+          ))}
+        </div>
+        <Link
+          href="/discover"
+          className="text-accent-text mt-6 inline-flex text-sm font-semibold sm:hidden"
+        >
+          View all recipes <ArrowRight aria-hidden className="ml-1 size-4" />
+        </Link>
       </section>
     </>
   );

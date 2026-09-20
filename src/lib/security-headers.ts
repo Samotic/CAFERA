@@ -158,7 +158,16 @@ export function buildCsp({ isDev, isSecure }: { isDev: boolean; isSecure: boolea
     ],
     'style-src': ["'self'", "'unsafe-inline'"],
     'style-src-attr': ["'unsafe-inline'"],
-    'img-src': ["'self'", 'data:', 'blob:', 'https://*.public.blob.vercel-storage.com'],
+    /* Curated recipe photography is currently served from Unsplash. Keep the
+       host explicit; arbitrary remote image origins remain blocked. */
+    'img-src': [
+      "'self'",
+      'data:',
+      'blob:',
+      'https://*.public.blob.vercel-storage.com',
+      'https://images.unsplash.com',
+      'https://res.cloudinary.com',
+    ],
     'font-src': ["'self'", 'data:'],
     'connect-src': ["'self'", ...(isDev ? ['ws:', 'wss:'] : [])],
     'media-src': ["'self'"],
