@@ -42,7 +42,6 @@
     "@eslint/js": "^9.39.5",
     "@next/bundle-analyzer": "^16.3.5",
     "@playwright/test": "^1.63.0",
-    "@rolldown/binding-win32-x64-msvc": "1.2.9",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
@@ -67,5 +66,8 @@
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-win32-x64-msvc": "1.2.9"
   }
 }
