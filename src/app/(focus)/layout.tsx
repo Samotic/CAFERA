@@ -9,7 +9,7 @@
  */
 export default function FocusLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-page flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col bg-page">
       <main id="main" className="flex flex-1 flex-col">
         {children}
       </main>

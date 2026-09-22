@@ -59,7 +59,7 @@ export function ConfirmDialog({
         </>
       }
     >
-      <p className="text-text-secondary text-[0.9375rem] leading-relaxed">{description}</p>
+      <p className="text-[0.9375rem] leading-relaxed text-text-secondary">{description}</p>
     </Modal>
   );
 }

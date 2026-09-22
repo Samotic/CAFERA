@@ -7,11 +7,11 @@ import { Field, Input } from '@/components/ui/Field';
 export default function LoginPage() {
   return (
     <div>
-      <p className="text-accent-text text-xs font-semibold uppercase tracking-[0.22em]">
+      <p className="text-xs font-semibold tracking-[0.22em] text-accent-text uppercase">
         Welcome back
       </p>
-      <h1 className="font-display mt-3 text-4xl font-semibold">Sign in to CAFERA</h1>
-      <p className="text-text-secondary mt-3">
+      <h1 className="mt-3 font-display text-4xl font-semibold">Sign in to CAFERA</h1>
+      <p className="mt-3 text-text-secondary">
         Authentication is ready for the Better Auth connection.
       </p>
       <form className="mt-8 space-y-5">
@@ -27,9 +27,9 @@ export default function LoginPage() {
           Sign in
         </Button>
       </form>
-      <p className="text-text-secondary mt-6 text-sm">
+      <p className="mt-6 text-sm text-text-secondary">
         New here?{' '}
-        <Link href="/register" className="text-accent-text font-semibold">
+        <Link href="/register" className="font-semibold text-accent-text">
           Create an account
         </Link>
       </p>

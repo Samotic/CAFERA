@@ -31,7 +31,7 @@ export function RatingDisplay({
   return (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
       <span aria-hidden className="relative inline-flex">
-        <span className="text-border-strong inline-flex gap-0.5">
+        <span className="inline-flex gap-0.5 text-border-strong">
           {Array.from({ length: REVIEW_MAX_RATING }, (_, index) => (
             <Star key={index} className={starSize} fill="currentColor" strokeWidth={0} />
           ))}
@@ -42,7 +42,7 @@ export function RatingDisplay({
 
             The filled layer is clipped to the exact percentage, so 4.3 looks like 4.3. */}
         <span
-          className="text-accent-line absolute inset-0 inline-flex gap-0.5 overflow-hidden"
+          className="absolute inset-0 inline-flex gap-0.5 overflow-hidden text-accent-line"
           style={{ width: `${percent}%` }}
         >
           {Array.from({ length: REVIEW_MAX_RATING }, (_, index) => (
@@ -57,11 +57,11 @@ export function RatingDisplay({
       </span>
 
       <span
-        className={cn('text-text-secondary font-medium', size === 'sm' ? 'text-xs' : 'text-sm')}
+        className={cn('font-medium text-text-secondary', size === 'sm' ? 'text-xs' : 'text-sm')}
       >
         {rounded.toFixed(1)}
         {typeof count === 'number' ? (
-          <span className="text-text-muted font-normal"> ({count})</span>
+          <span className="font-normal text-text-muted"> ({count})</span>
         ) : null}
       </span>
 
@@ -100,7 +100,7 @@ export function RatingInput({
 
   return (
     <fieldset disabled={disabled} className="border-0 p-0" onMouseLeave={() => setHovered(null)}>
-      <legend className="text-text mb-2 text-sm font-medium">{label}</legend>
+      <legend className="mb-2 text-sm font-medium text-text">{label}</legend>
       <div className="flex items-center gap-1">
         {Array.from({ length: REVIEW_MAX_RATING }, (_, index) => {
           const starValue = index + 1;
@@ -139,7 +139,7 @@ export function RatingInput({
             </label>
           );
         })}
-        <span aria-live="polite" className="text-text-muted ml-2 text-sm">
+        <span aria-live="polite" className="ml-2 text-sm text-text-muted">
           {value > 0 ? `${value} of ${REVIEW_MAX_RATING}` : 'Not rated'}
         </span>
       </div>

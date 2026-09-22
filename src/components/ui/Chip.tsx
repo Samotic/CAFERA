@@ -35,7 +35,7 @@ export function InfoChip({
     <span
       className={cn(
         CHIP_BASE,
-        'bg-sunken text-text-secondary border-border border font-medium',
+        'border border-border bg-sunken font-medium text-text-secondary',
         className,
       )}
       {...props}
@@ -59,8 +59,8 @@ export function ChipLink({ isActive = false, className, ...props }: ChipLinkProp
         CHIP_BASE,
         CHIP_INTERACTIVE,
         isActive
-          ? 'bg-primary text-on-primary font-semibold shadow-sm'
-          : 'bg-card text-text-secondary border-border hover:border-accent-line hover:text-text border font-medium',
+          ? 'bg-primary font-semibold text-on-primary shadow-sm'
+          : 'border border-border bg-card font-medium text-text-secondary hover:border-accent-line hover:text-text',
         className,
       )}
       {...props}
@@ -81,8 +81,8 @@ export function ChipToggle({ isSelected, className, ...props }: ChipToggleProps)
         CHIP_BASE,
         CHIP_INTERACTIVE,
         isSelected
-          ? 'bg-accent-soft text-accent-text border-accent-line border font-semibold'
-          : 'bg-card text-text-secondary border-border hover:border-border-strong hover:text-text border font-medium',
+          ? 'border border-accent-line bg-accent-soft font-semibold text-accent-text'
+          : 'border border-border bg-card font-medium text-text-secondary hover:border-border-strong hover:text-text',
         className,
       )}
       {...props}
@@ -111,7 +111,7 @@ export function FilterPill({
       className={cn(
         CHIP_BASE,
         CHIP_INTERACTIVE,
-        'bg-accent-soft text-accent-text border-accent-line hover:bg-sunken border font-medium',
+        'border border-accent-line bg-accent-soft font-medium text-accent-text hover:bg-sunken',
       )}
     >
       <span className="text-text-muted">{label}:</span>

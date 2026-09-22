@@ -77,18 +77,18 @@ export function Logo({
 
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <LogoMark className={cn(markSize, 'text-accent-line shrink-0')} />
+      <LogoMark className={cn(markSize, 'shrink-0 text-accent-line')} />
       <span className="flex flex-col leading-none">
         <span
           className={cn(
-            'font-display text-text font-semibold uppercase tracking-[0.18em]',
+            'font-display font-semibold tracking-[0.18em] text-text uppercase',
             textSize,
           )}
         >
           Cafera
         </span>
         {showTagline ? (
-          <span className="text-text-muted mt-1.5 text-[0.6875rem] uppercase tracking-[0.22em]">
+          <span className="mt-1.5 text-[0.6875rem] tracking-[0.22em] text-text-muted uppercase">
             Discover. Brew. Enjoy.
           </span>
         ) : null}

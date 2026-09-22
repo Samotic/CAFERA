@@ -60,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <ThemeScript />
       </head>
-      <body className="bg-page text-text min-h-dvh antialiased">
+      <body className="min-h-dvh bg-page text-text antialiased">
         <a href="#main" className="skip-link sr-only">
           Skip to main content
         </a>

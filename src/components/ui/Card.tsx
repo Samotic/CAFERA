@@ -24,7 +24,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLElement> {
 export function Card({ variant = 'raised', as: Tag = 'div', className, ...props }: CardProps) {
   return (
     <Tag
-      className={cn('rounded-card overflow-hidden', CARD_VARIANTS[variant], className)}
+      className={cn('overflow-hidden rounded-card', CARD_VARIANTS[variant], className)}
       {...props}
     />
   );
@@ -47,7 +47,7 @@ export function CardLink({ variant = 'raised', className, ...props }: CardLinkPr
   return (
     <Link
       className={cn(
-        'rounded-card group/card relative block overflow-hidden transition-all duration-200 ease-out',
+        'group/card relative block overflow-hidden rounded-card transition-all duration-200 ease-out',
         'hover:-translate-y-0.5 hover:shadow-lg',
         '',
         'motion-reduce:transform-none motion-reduce:transition-none',
@@ -70,7 +70,7 @@ export function CardTitle({
 }: React.HTMLAttributes<HTMLHeadingElement> & { as?: 'h2' | 'h3' | 'h4' }) {
   return (
     <Tag
-      className={cn('font-display text-text text-lg font-semibold leading-snug', className)}
+      className={cn('font-display text-lg leading-snug font-semibold text-text', className)}
       {...props}
     />
   );
@@ -80,5 +80,5 @@ export function CardDescription({
   className,
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn('text-text-muted mt-1 text-sm leading-relaxed', className)} {...props} />;
+  return <p className={cn('mt-1 text-sm leading-relaxed text-text-muted', className)} {...props} />;
 }

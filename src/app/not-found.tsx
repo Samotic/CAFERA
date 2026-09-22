@@ -8,15 +8,15 @@ import { ButtonLink } from '@/components/ui/Button';
  */
 export default function NotFound() {
   return (
-    <div className="bg-page flex min-h-dvh flex-col items-center justify-center px-6 text-center">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-page px-6 text-center">
       <Logo size="lg" />
 
-      <span className="bg-accent-soft text-accent-text mt-10 flex size-16 items-center justify-center rounded-full">
+      <span className="mt-10 flex size-16 items-center justify-center rounded-full bg-accent-soft text-accent-text">
         <Coffee aria-hidden className="size-7" />
       </span>
 
-      <h1 className="font-display text-text mt-6 text-3xl font-semibold">This cup is empty</h1>
-      <p className="text-text-muted mt-3 max-w-md text-[0.9375rem] leading-relaxed">
+      <h1 className="mt-6 font-display text-3xl font-semibold text-text">This cup is empty</h1>
+      <p className="mt-3 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
         We could not find the page you were looking for. It may have been moved, or the link may
         have a typo in it.
       </p>

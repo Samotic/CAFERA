@@ -71,14 +71,14 @@ export function Modal({
         className,
       )}
     >
-      <div className="bg-card flex max-h-[85dvh] flex-col rounded-xl shadow-xl">
-        <header className="border-border flex items-start justify-between gap-4 border-b p-5">
+      <div className="flex max-h-[85dvh] flex-col rounded-xl bg-card shadow-xl">
+        <header className="flex items-start justify-between gap-4 border-b border-border p-5">
           <div>
-            <h2 id={titleId} className="font-display text-text text-xl font-semibold">
+            <h2 id={titleId} className="font-display text-xl font-semibold text-text">
               {title}
             </h2>
             {description ? (
-              <p id={descriptionId} className="text-text-muted mt-1 text-sm">
+              <p id={descriptionId} className="mt-1 text-sm text-text-muted">
                 {description}
               </p>
             ) : null}
@@ -93,7 +93,7 @@ export function Modal({
         <div className="overflow-y-auto overscroll-contain p-5">{children}</div>
 
         {footer ? (
-          <footer className="border-border flex flex-wrap justify-end gap-3 border-t p-5">
+          <footer className="flex flex-wrap justify-end gap-3 border-t border-border p-5">
             {footer}
           </footer>
         ) : null}

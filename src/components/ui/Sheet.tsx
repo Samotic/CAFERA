@@ -62,15 +62,15 @@ export function Sheet({
       data-cafera-dialog=""
       data-dialog-variant={side}
       className={cn(
-        'bg-card text-text max-w-none p-0 shadow-xl',
+        'max-w-none bg-card p-0 text-text shadow-xl',
         'backdrop:bg-[rgb(32_26_23/0.5)] backdrop:backdrop-blur-sm',
         SIDE_STYLES[side],
         className,
       )}
     >
       <div className="flex h-full flex-col">
-        <header className="border-border flex items-center justify-between gap-4 border-b px-5 py-4">
-          <h2 id={titleId} className="font-display text-text text-lg font-semibold">
+        <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
+          <h2 id={titleId} className="font-display text-lg font-semibold text-text">
             {title}
           </h2>
           <IconButton label="Close" onClick={onClose} size="sm">
@@ -81,7 +81,7 @@ export function Sheet({
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
 
         {footer ? (
-          <footer className="border-border safe-bottom bg-card flex gap-3 border-t px-5 py-4">
+          <footer className="safe-bottom flex gap-3 border-t border-border bg-card px-5 py-4">
             {footer}
           </footer>
         ) : null}

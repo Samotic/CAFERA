@@ -34,13 +34,13 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Dis
   return (
     <div className="content-container py-10 sm:py-14">
       <div className="max-w-2xl">
-        <p className="text-accent-text text-xs font-semibold uppercase tracking-[0.22em]">
+        <p className="text-xs font-semibold tracking-[0.22em] text-accent-text uppercase">
           The recipe library
         </p>
-        <h1 className="font-display mt-3 text-[length:var(--text-display-md)] font-semibold">
+        <h1 className="mt-3 font-display text-[length:var(--text-display-md)] font-semibold">
           Find your next cup.
         </h1>
-        <p className="text-text-secondary mt-4 text-lg leading-relaxed">
+        <p className="mt-4 text-lg leading-relaxed text-text-secondary">
           Twenty-five recipes with the ratio, equipment, and method already thought through.
         </p>
       </div>
@@ -49,17 +49,17 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Dis
         <label className="relative block flex-1">
           <Search
             aria-hidden
-            className="text-text-muted absolute left-4 top-1/2 size-5 -translate-y-1/2"
+            className="absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-muted"
           />
           <input
             name="q"
             defaultValue={params.q}
             placeholder="Search by drink, origin, or ingredient"
-            className="border-border-strong bg-card text-text placeholder:text-text-muted h-14 w-full rounded-full border pl-12 pr-5 outline-none"
+            className="h-14 w-full rounded-full border border-border-strong bg-card pr-5 pl-12 text-text outline-none placeholder:text-text-muted"
           />
         </label>
         <button
-          className="bg-primary text-on-primary hover:bg-primary-hover rounded-full px-6 font-semibold transition"
+          className="rounded-full bg-primary px-6 font-semibold text-on-primary transition hover:bg-primary-hover"
           type="submit"
         >
           Search
@@ -69,7 +69,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Dis
       <div className="mt-8 flex flex-wrap gap-2" aria-label="Recipe categories">
         <a
           href="/discover"
-          className="border-border-strong bg-card rounded-full border px-4 py-2 text-sm font-medium"
+          className="rounded-full border border-border-strong bg-card px-4 py-2 text-sm font-medium"
         >
           All
         </a>
@@ -77,7 +77,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Dis
           <a
             key={category.slug}
             href={`/discover?category=${category.slug}`}
-            className="border-border bg-card text-text-secondary hover:border-accent-line rounded-full border px-4 py-2 text-sm font-medium"
+            className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-text-secondary hover:border-accent-line"
           >
             {category.label}
           </a>
@@ -87,7 +87,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Dis
       <div className="mt-12 flex items-end justify-between gap-4">
         <h2 className="font-display text-2xl font-semibold">{filtered.length} recipes</h2>
         {(query || params.category || params.facet) && (
-          <a href="/discover" className="text-accent-text text-sm font-semibold">
+          <a href="/discover" className="text-sm font-semibold text-accent-text">
             Clear filters
           </a>
         )}
@@ -99,7 +99,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Dis
           ))}
         </div>
       ) : (
-        <p className="rounded-card border-border bg-card text-text-secondary mt-6 border p-8">
+        <p className="mt-6 rounded-card border border-border bg-card p-8 text-text-secondary">
           No recipes match that search yet. Try a different origin or brew style.
         </p>
       )}

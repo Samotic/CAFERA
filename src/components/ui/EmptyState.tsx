@@ -30,13 +30,13 @@ export function EmptyState({
       className={cn('flex flex-col items-center justify-center px-6 py-16 text-center', className)}
     >
       {Icon ? (
-        <span className="bg-accent-soft text-accent-text mb-5 flex size-16 items-center justify-center rounded-full">
+        <span className="mb-5 flex size-16 items-center justify-center rounded-full bg-accent-soft text-accent-text">
           <Icon aria-hidden className="size-7" />
         </span>
       ) : null}
 
-      <h2 className="font-display text-text text-xl font-semibold">{title}</h2>
-      <p className="text-text-muted mt-2 max-w-sm text-[0.9375rem] leading-relaxed">
+      <h2 className="font-display text-xl font-semibold text-text">{title}</h2>
+      <p className="mt-2 max-w-sm text-[0.9375rem] leading-relaxed text-text-muted">
         {description}
       </p>
 

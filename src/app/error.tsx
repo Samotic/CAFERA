@@ -25,13 +25,13 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="bg-page flex min-h-dvh flex-col items-center justify-center px-6 text-center">
-      <span className="bg-danger-soft text-danger flex size-16 items-center justify-center rounded-full">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-page px-6 text-center">
+      <span className="flex size-16 items-center justify-center rounded-full bg-danger-soft text-danger">
         <TriangleAlert aria-hidden className="size-7" />
       </span>
 
-      <h1 className="font-display text-text mt-6 text-3xl font-semibold">Something spilled</h1>
-      <p className="text-text-muted mt-3 max-w-md text-[0.9375rem] leading-relaxed">
+      <h1 className="mt-6 font-display text-3xl font-semibold text-text">Something spilled</h1>
+      <p className="mt-3 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
         We hit an unexpected problem loading this page. Trying again usually sorts it out.
       </p>
 
@@ -43,7 +43,7 @@ export default function GlobalError({
       </div>
 
       {error.digest ? (
-        <p className="text-text-muted mt-8 font-mono text-xs">Reference: {error.digest}</p>
+        <p className="mt-8 font-mono text-xs text-text-muted">Reference: {error.digest}</p>
       ) : null}
     </div>
   );

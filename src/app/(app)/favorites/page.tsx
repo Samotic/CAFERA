@@ -5,18 +5,18 @@ import { Card, CardBody, CardDescription, CardTitle } from '@/components/ui/Card
 export default function FavoritesPage() {
   return (
     <div className="content-container py-10 sm:py-14">
-      <p className="text-accent-text text-xs font-semibold uppercase tracking-[0.22em]">
+      <p className="text-xs font-semibold tracking-[0.22em] text-accent-text uppercase">
         Your collection
       </p>
-      <h1 className="font-display mt-3 text-[length:var(--text-display-md)] font-semibold">
+      <h1 className="mt-3 font-display text-[length:var(--text-display-md)] font-semibold">
         Favorites
       </h1>
-      <p className="text-text-secondary mt-4 max-w-2xl text-lg leading-relaxed">
+      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-text-secondary">
         Save recipes you want to return to, then find them here whenever you are ready to brew.
       </p>
       <Card className="mt-10 max-w-2xl" variant="outline">
         <CardBody>
-          <Heart className="text-accent-text size-7" />
+          <Heart className="size-7 text-accent-text" />
           <CardTitle className="mt-4">Nothing saved yet</CardTitle>
           <CardDescription>
             Browse the recipe library and save your next favorite cup.

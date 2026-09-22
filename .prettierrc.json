@@ -6,6 +6,6 @@
   "tabWidth": 2,
   "arrowParens": "always",
   "plugins": ["prettier-plugin-tailwindcss"],
-  "tailwindStylesheet": "./web/src/app/globals.css",
+  "tailwindStylesheet": "./src/app/globals.css",
   "overrides": [{ "files": "*.md", "options": { "printWidth": 80, "proseWrap": "preserve" } }]
 }

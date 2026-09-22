@@ -25,20 +25,20 @@ export default function HomePage() {
         {/* Warm wash standing in for the hero photograph until the imagery lands. */}
         <div
           aria-hidden
-          className="from-sunken via-page to-accent-soft absolute inset-0 bg-gradient-to-br"
+          className="absolute inset-0 bg-gradient-to-br from-sunken via-page to-accent-soft"
         />
 
         <div className="content-container relative py-16 sm:py-24 lg:py-32">
           <div className="max-w-2xl">
-            <p className="text-accent-text text-xs font-semibold uppercase tracking-[0.22em]">
+            <p className="text-xs font-semibold tracking-[0.22em] text-accent-text uppercase">
               {SITE_TAGLINE_PARTS.join(' · ')}
             </p>
 
-            <h1 className="font-display text-text mt-5 text-[length:var(--text-display-lg)] font-semibold leading-[1.05]">
+            <h1 className="mt-5 font-display text-[length:var(--text-display-lg)] leading-[1.05] font-semibold text-text">
               Every great cup starts with knowing how.
             </h1>
 
-            <p className="text-text-secondary mt-6 max-w-xl text-lg leading-relaxed">
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-text-secondary">
               Twenty-five specialty coffee recipes, from a two-minute espresso to an overnight cold
               brew — each with proper ratios, the right equipment and step-by-step brewing you can
               actually follow.
@@ -67,11 +67,11 @@ export default function HomePage() {
             their own URL state. */}
         <Link
           href="/discover"
-          className="border-border-strong bg-card text-text-muted hover:border-accent-line flex h-14 w-full items-center gap-3 rounded-full border px-5 transition-colors"
+          className="flex h-14 w-full items-center gap-3 rounded-full border border-border-strong bg-card px-5 text-text-muted transition-colors hover:border-accent-line"
         >
           <Search aria-hidden className="size-5 shrink-0" />
           <span className="text-[0.9375rem]">Search coffee, ingredients…</span>
-          <kbd className="border-border bg-sunken text-text-muted ml-auto hidden rounded border px-2 py-1 font-sans text-xs lg:inline-block">
+          <kbd className="ml-auto hidden rounded border border-border bg-sunken px-2 py-1 font-sans text-xs text-text-muted lg:inline-block">
             Ctrl K
           </kbd>
         </Link>
@@ -80,7 +80,7 @@ export default function HomePage() {
       <section className="content-container pb-16" aria-labelledby="home-categories-heading">
         <h2
           id="home-categories-heading"
-          className="font-display text-text text-[length:var(--text-display-sm)] font-semibold"
+          className="font-display text-[length:var(--text-display-sm)] font-semibold text-text"
         >
           Browse by style
         </h2>
@@ -100,19 +100,19 @@ export default function HomePage() {
       <section className="content-container pb-20" aria-labelledby="home-featured-heading">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="text-accent-text text-xs font-semibold uppercase tracking-[0.22em]">
+            <p className="text-xs font-semibold tracking-[0.22em] text-accent-text uppercase">
               Start here
             </p>
             <h2
               id="home-featured-heading"
-              className="font-display mt-2 text-[length:var(--text-display-sm)] font-semibold"
+              className="mt-2 font-display text-[length:var(--text-display-sm)] font-semibold"
             >
               Good coffee, no guesswork.
             </h2>
           </div>
           <Link
             href="/discover"
-            className="text-accent-text hidden text-sm font-semibold sm:inline-flex"
+            className="hidden text-sm font-semibold text-accent-text sm:inline-flex"
           >
             View all recipes <ArrowRight aria-hidden className="ml-1 size-4" />
           </Link>
@@ -124,7 +124,7 @@ export default function HomePage() {
         </div>
         <Link
           href="/discover"
-          className="text-accent-text mt-6 inline-flex text-sm font-semibold sm:hidden"
+          className="mt-6 inline-flex text-sm font-semibold text-accent-text sm:hidden"
         >
           View all recipes <ArrowRight aria-hidden className="ml-1 size-4" />
         </Link>

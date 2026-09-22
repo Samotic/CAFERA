@@ -158,7 +158,7 @@ function ToastViewport({
           <div
             key={item.id}
             className={cn(
-              'bg-card pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border p-3.5 shadow-lg',
+              'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border bg-card p-3.5 shadow-lg',
               'animate-[cafera-toast-in_220ms_ease-out] motion-reduce:animate-none',
               TONE_STYLES[item.tone],
             )}
@@ -169,7 +169,7 @@ function ToastViewport({
             />
             <div className="flex-1 text-sm">
               <span className="sr-only">{TONE_LABELS[item.tone]}: </span>
-              <p className="text-text leading-snug">{item.message}</p>
+              <p className="leading-snug text-text">{item.message}</p>
               {item.action ? (
                 <button
                   type="button"
@@ -177,7 +177,7 @@ function ToastViewport({
                     item.action?.onClick();
                     onDismiss(item.id);
                   }}
-                  className="text-accent-text mt-1.5 font-semibold underline underline-offset-2"
+                  className="mt-1.5 font-semibold text-accent-text underline underline-offset-2"
                 >
                   {item.action.label}
                 </button>
@@ -187,7 +187,7 @@ function ToastViewport({
               type="button"
               onClick={() => onDismiss(item.id)}
               aria-label="Dismiss notification"
-              className="text-text-muted hover:text-text -m-1 shrink-0 rounded p-1"
+              className="-m-1 shrink-0 rounded p-1 text-text-muted hover:text-text"
             >
               <X aria-hidden className="size-4" />
             </button>

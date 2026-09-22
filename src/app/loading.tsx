@@ -20,7 +20,7 @@ export default function Loading() {
         ))}
       </div>
 
-      <div className="skeleton rounded-card mt-10 aspect-[16/10] w-full sm:aspect-[21/9]" />
+      <div className="skeleton mt-10 aspect-[16/10] w-full rounded-card sm:aspect-[21/9]" />
 
       <div className="mt-10">
         <div className="skeleton h-7 w-48 rounded-md" />

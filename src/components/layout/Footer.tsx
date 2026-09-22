@@ -16,19 +16,19 @@ const LEGAL_LINKS = [
 
 export function Footer() {
   return (
-    <footer className="border-border bg-sunken mt-16 border-t">
+    <footer className="mt-16 border-t border-border bg-sunken">
       <div className="content-container py-12">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
           <div>
             <Logo showTagline />
-            <p className="text-text-muted mt-4 max-w-xs text-sm leading-relaxed">
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-text-muted">
               A calmer way to find your next cup. Twenty-five specialty recipes, proper brewing
               guides and a collection that is yours.
             </p>
           </div>
 
           <nav aria-labelledby="footer-categories">
-            <h2 id="footer-categories" className="text-text mb-3 text-sm font-semibold">
+            <h2 id="footer-categories" className="mb-3 text-sm font-semibold text-text">
               Browse
             </h2>
             <ul className="flex flex-col gap-2">
@@ -36,7 +36,7 @@ export function Footer() {
                 <li key={category.slug}>
                   <Link
                     href={`/discover?category=${category.slug}`}
-                    className="text-text-muted hover:text-accent-text rounded text-sm"
+                    className="rounded text-sm text-text-muted hover:text-accent-text"
                   >
                     {category.label}
                   </Link>
@@ -46,7 +46,7 @@ export function Footer() {
           </nav>
 
           <nav aria-labelledby="footer-legal">
-            <h2 id="footer-legal" className="text-text mb-3 text-sm font-semibold">
+            <h2 id="footer-legal" className="mb-3 text-sm font-semibold text-text">
               CAFERA
             </h2>
             <ul className="flex flex-col gap-2">
@@ -54,7 +54,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-text-muted hover:text-accent-text rounded text-sm"
+                    className="rounded text-sm text-text-muted hover:text-accent-text"
                   >
                     {link.label}
                   </Link>
@@ -64,7 +64,7 @@ export function Footer() {
           </nav>
         </div>
 
-        <p className="border-border text-text-muted mt-10 border-t pt-6 text-xs">
+        <p className="mt-10 border-t border-border pt-6 text-xs text-text-muted">
           &copy; {new Date().getFullYear()} CAFERA. Brewed with care.
         </p>
       </div>

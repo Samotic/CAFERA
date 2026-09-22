@@ -9,13 +9,13 @@ export default function MyCafePage() {
     <div className="content-container py-10 sm:py-14">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="text-accent-text text-xs font-semibold uppercase tracking-[0.22em]">
+          <p className="text-xs font-semibold tracking-[0.22em] text-accent-text uppercase">
             Your coffee space
           </p>
-          <h1 className="font-display mt-3 text-[length:var(--text-display-md)] font-semibold">
+          <h1 className="mt-3 font-display text-[length:var(--text-display-md)] font-semibold">
             My Café
           </h1>
-          <p className="text-text-secondary mt-4 max-w-2xl text-lg leading-relaxed">
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-text-secondary">
             Keep your saved recipes, brewing history, and custom creations together.
           </p>
         </div>
@@ -27,12 +27,12 @@ export default function MyCafePage() {
         {MY_CAFE_SECTIONS.map((section) => (
           <Card key={section.href} as="article">
             <CardBody>
-              <Coffee className="text-accent-text size-6" />
+              <Coffee className="size-6 text-accent-text" />
               <CardTitle className="mt-4">{section.label}</CardTitle>
               <CardDescription>{section.description}</CardDescription>
               <Link
                 href={section.href}
-                className="text-accent-text mt-5 inline-flex items-center gap-2 text-sm font-semibold"
+                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent-text"
               >
                 Open <ArrowRight className="size-4" />
               </Link>

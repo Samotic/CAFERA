@@ -46,10 +46,10 @@ export function Field({
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <label htmlFor={id} className={cn('text-text text-sm font-medium', hideLabel && 'sr-only')}>
+      <label htmlFor={id} className={cn('text-sm font-medium text-text', hideLabel && 'sr-only')}>
         {label}
         {required ? (
-          <span className="text-danger ml-0.5" aria-hidden>
+          <span className="ml-0.5 text-danger" aria-hidden>
             *
           </span>
         ) : null}
@@ -63,14 +63,14 @@ export function Field({
       })}
 
       {hint && !error ? (
-        <p id={hintId} className="text-text-muted text-xs">
+        <p id={hintId} className="text-xs text-text-muted">
           {hint}
         </p>
       ) : null}
 
       {error ? (
         /* `role="alert"` so the message is announced the moment it appears. */
-        <p id={errorId} role="alert" className="text-danger flex items-start gap-1.5 text-xs">
+        <p id={errorId} role="alert" className="flex items-start gap-1.5 text-xs text-danger">
           <AlertCircle aria-hidden className="mt-px size-3.5 shrink-0" />
           <span>{error}</span>
         </p>
@@ -127,7 +127,7 @@ export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<H
     return (
       <select
         ref={ref}
-        className={cn(INPUT_BASE, 'border-border-strong hover:border-accent-line pr-9', className)}
+        className={cn(INPUT_BASE, 'border-border-strong pr-9 hover:border-accent-line', className)}
         {...props}
       />
     );
@@ -150,14 +150,14 @@ export function Checkbox({
         id={id}
         type="checkbox"
         className={cn(
-          'accent-accent-line border-border-strong mt-0.5 size-5 shrink-0 cursor-pointer rounded',
+          'mt-0.5 size-5 shrink-0 cursor-pointer rounded border-border-strong accent-accent-line',
           '',
         )}
         {...props}
       />
       <label
         htmlFor={id}
-        className="text-text cursor-pointer select-none text-[0.9375rem] leading-6"
+        className="cursor-pointer text-[0.9375rem] leading-6 text-text select-none"
       >
         {label}
       </label>

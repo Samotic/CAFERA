@@ -16,7 +16,7 @@ export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivEl
 /** Matches RecipeCard's geometry exactly: 1:1 image, title, meta row. */
 export function RecipeCardSkeleton() {
   return (
-    <div className="rounded-card bg-card overflow-hidden shadow-sm">
+    <div className="overflow-hidden rounded-card bg-card shadow-sm">
       <Skeleton className="aspect-square w-full rounded-none" />
       <div className="flex flex-col gap-2 p-4">
         <Skeleton className="h-5 w-3/4" />

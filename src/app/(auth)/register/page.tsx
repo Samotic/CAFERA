@@ -7,11 +7,11 @@ import { Field, Input } from '@/components/ui/Field';
 export default function RegisterPage() {
   return (
     <div>
-      <p className="text-accent-text text-xs font-semibold uppercase tracking-[0.22em]">
+      <p className="text-xs font-semibold tracking-[0.22em] text-accent-text uppercase">
         Join CAFERA
       </p>
-      <h1 className="font-display mt-3 text-4xl font-semibold">Make coffee yours.</h1>
-      <p className="text-text-secondary mt-3">
+      <h1 className="mt-3 font-display text-4xl font-semibold">Make coffee yours.</h1>
+      <p className="mt-3 text-text-secondary">
         Create an account to sync favorites, preferences, and custom recipes.
       </p>
       <form className="mt-8 space-y-5">
@@ -30,9 +30,9 @@ export default function RegisterPage() {
           Create account
         </Button>
       </form>
-      <p className="text-text-secondary mt-6 text-sm">
+      <p className="mt-6 text-sm text-text-secondary">
         Already have an account?{' '}
-        <Link href="/login" className="text-accent-text font-semibold">
+        <Link href="/login" className="font-semibold text-accent-text">
           Sign in
         </Link>
       </p>

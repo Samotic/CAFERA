@@ -42,20 +42,20 @@ export function BrewMode({ recipe }: { recipe: Recipe }) {
       <header className="mx-auto flex w-full max-w-4xl items-center justify-between">
         <Link
           href={`/recipes/${recipe.slug}`}
-          className="text-text-secondary inline-flex items-center gap-2 text-sm font-semibold"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary"
         >
           <ArrowLeft className="size-4" /> Exit Brew Mode
         </Link>
         <button
           type="button"
           onClick={reset}
-          className="border-border-strong text-text-secondary inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold"
+          className="inline-flex items-center gap-2 rounded-full border border-border-strong px-4 py-2 text-sm font-semibold text-text-secondary"
         >
           <RotateCcw className="size-4" /> Restart
         </button>
       </header>
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center py-12">
-        <p className="text-accent-text text-xs font-semibold uppercase tracking-[0.22em]">
+        <p className="text-xs font-semibold tracking-[0.22em] text-accent-text uppercase">
           Brew Mode
         </p>
         <div className="mt-4 flex items-end justify-between gap-4">
@@ -63,11 +63,11 @@ export function BrewMode({ recipe }: { recipe: Recipe }) {
             <h1 className="font-display text-[length:var(--text-display-md)] font-semibold">
               {recipe.name}
             </h1>
-            <p className="text-text-secondary mt-2">
+            <p className="mt-2 text-text-secondary">
               Step {stepIndex + 1} of {recipe.steps.length}
             </p>
           </div>
-          <div className="text-accent-text text-5xl font-semibold tabular-nums">
+          <div className="text-5xl font-semibold text-accent-text tabular-nums">
             {seconds > 0 ? (
               `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
             ) : (
@@ -75,23 +75,23 @@ export function BrewMode({ recipe }: { recipe: Recipe }) {
             )}
           </div>
         </div>
-        <div className="bg-sunken mt-8 h-2 overflow-hidden rounded-full">
+        <div className="mt-8 h-2 overflow-hidden rounded-full bg-sunken">
           <div
-            className="bg-accent-line h-full rounded-full transition-[width]"
+            className="h-full rounded-full bg-accent-line transition-[width]"
             style={{ width: `${((stepIndex + 1) / recipe.steps.length) * 100}%` }}
           />
         </div>
-        <section className="rounded-card border-border bg-card mt-10 border p-6 shadow-sm sm:p-10">
-          <span className="text-accent-text text-sm font-semibold">Step {step.order}</span>
-          <p className="font-display mt-4 max-w-2xl text-2xl leading-snug sm:text-4xl">
+        <section className="mt-10 rounded-card border border-border bg-card p-6 shadow-sm sm:p-10">
+          <span className="text-sm font-semibold text-accent-text">Step {step.order}</span>
+          <p className="mt-4 max-w-2xl font-display text-2xl leading-snug sm:text-4xl">
             {step.instruction}
           </p>
           {step.durationSeconds ? (
-            <p className="text-text-muted mt-5 text-sm">
+            <p className="mt-5 text-sm text-text-muted">
               The timer pauses when you pause Brew Mode.
             </p>
           ) : (
-            <p className="text-text-muted mt-5 text-sm">
+            <p className="mt-5 text-sm text-text-muted">
               Take your time. This step has no countdown.
             </p>
           )}
@@ -101,7 +101,7 @@ export function BrewMode({ recipe }: { recipe: Recipe }) {
             type="button"
             onClick={() => setRunning((value) => !value)}
             disabled={seconds === 0}
-            className="bg-primary text-on-primary inline-flex h-12 items-center gap-2 rounded-full px-6 font-semibold disabled:opacity-50"
+            className="inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 font-semibold text-on-primary disabled:opacity-50"
           >
             {running ? <Pause className="size-4" /> : <Play className="size-4" />}
             {running ? 'Pause timer' : 'Start timer'}
@@ -110,7 +110,7 @@ export function BrewMode({ recipe }: { recipe: Recipe }) {
             type="button"
             onClick={nextStep}
             disabled={!isLast && seconds > 0}
-            className="border-border-strong text-text inline-flex h-12 items-center gap-2 rounded-full border px-6 font-semibold disabled:opacity-50"
+            className="inline-flex h-12 items-center gap-2 rounded-full border border-border-strong px-6 font-semibold text-text disabled:opacity-50"
           >
             {isLast ? 'Finished' : 'Next step'}
           </button>

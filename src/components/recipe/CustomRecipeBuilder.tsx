@@ -264,7 +264,7 @@ export function CustomRecipeBuilder() {
         <ol className="space-y-3">
           {draft.steps.map((step, index) => (
             <li key={index} className="flex gap-3">
-              <span className="bg-accent-soft text-accent-text mt-3 flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+              <span className="mt-3 flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent-text">
                 {index + 1}
               </span>
               <Field label={`Step ${index + 1}`} hideLabel required className="flex-1">
@@ -305,20 +305,20 @@ export function CustomRecipeBuilder() {
         </ol>
       </section>
 
-      <section className="border-border border-t pt-6">
+      <section className="border-t border-border pt-6">
         <Checkbox
           label="Make this recipe public"
           checked={draft.isPublic}
           onChange={(event) => update('isPublic', event.target.checked)}
         />
-        <p className="text-text-muted mt-2 text-sm">
+        <p className="mt-2 text-sm text-text-muted">
           Public recipes can be shared. Private recipes stay in your café.
         </p>
       </section>
       {errors.length ? (
         <div
           role="alert"
-          className="border-danger bg-danger-soft text-danger rounded-md border p-4 text-sm"
+          className="rounded-md border border-danger bg-danger-soft p-4 text-sm text-danger"
         >
           {errors.map((error) => (
             <p key={error}>{error}</p>
@@ -326,7 +326,7 @@ export function CustomRecipeBuilder() {
         </div>
       ) : null}
       {message ? (
-        <p role="status" className="bg-accent-soft text-accent-text rounded-md p-4 text-sm">
+        <p role="status" className="rounded-md bg-accent-soft p-4 text-sm text-accent-text">
           {message}
         </p>
       ) : null}

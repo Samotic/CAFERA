@@ -72,13 +72,13 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
       <div className="content-container py-6">
         <Link
           href="/discover"
-          className="text-text-secondary hover:text-text inline-flex items-center gap-2 text-sm font-semibold"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-text"
         >
           <ArrowLeft className="size-4" /> All recipes
         </Link>
       </div>
       <div className="content-container grid gap-10 pb-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-16">
-        <div className="rounded-card bg-sunken overflow-hidden">
+        <div className="overflow-hidden rounded-card bg-sunken">
           <img
             src={recipe.image}
             alt={recipe.name}
@@ -86,14 +86,14 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
           />
         </div>
         <div className="lg:pt-8">
-          <p className="text-accent-text text-xs font-semibold uppercase tracking-[0.22em]">
+          <p className="text-xs font-semibold tracking-[0.22em] text-accent-text uppercase">
             {recipe.category.replace('-', ' ')}
           </p>
-          <h1 className="font-display mt-3 text-[length:var(--text-display-md)] font-semibold leading-tight">
+          <h1 className="mt-3 font-display text-[length:var(--text-display-md)] leading-tight font-semibold">
             {recipe.name}
           </h1>
-          <p className="text-text-secondary mt-5 text-lg leading-relaxed">{recipe.description}</p>
-          <div className="text-text-secondary mt-6 flex flex-wrap gap-4 text-sm">
+          <p className="mt-5 text-lg leading-relaxed text-text-secondary">{recipe.description}</p>
+          <div className="mt-6 flex flex-wrap gap-4 text-sm text-text-secondary">
             <span className="inline-flex items-center gap-2">
               <Clock3 className="size-4" /> {recipe.preparationTime} min
             </span>
@@ -107,12 +107,12 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
           </ButtonLink>
         </div>
       </div>
-      <div className="content-container border-border grid gap-10 border-t py-12 lg:grid-cols-[0.7fr_1.3fr]">
+      <div className="content-container grid gap-10 border-t border-border py-12 lg:grid-cols-[0.7fr_1.3fr]">
         <section aria-labelledby="ingredients-heading">
           <h2 id="ingredients-heading" className="font-display text-2xl font-semibold">
             Ingredients
           </h2>
-          <ul className="divide-border rounded-card border-border bg-card mt-5 divide-y border px-5">
+          <ul className="mt-5 divide-y divide-border rounded-card border border-border bg-card px-5">
             {recipe.ingredients.map((ingredient) => (
               <li
                 key={ingredient.name}
@@ -125,7 +125,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
               </li>
             ))}
           </ul>
-          <div className="text-text-muted mt-5 flex items-center gap-2 text-sm">
+          <div className="mt-5 flex items-center gap-2 text-sm text-text-muted">
             <Scale className="size-4" /> Serves one. Scale the coffee and water together.
           </div>
         </section>
@@ -136,13 +136,13 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
           <ol className="mt-5 space-y-5">
             {recipe.steps.map((step) => (
               <li key={step.order} className="flex gap-4">
-                <span className="bg-accent-soft text-accent-text flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent-text">
                   {step.order}
                 </span>
                 <div>
                   <p className="leading-relaxed">{step.instruction}</p>
                   {step.durationSeconds && (
-                    <p className="text-text-muted mt-1 text-sm">
+                    <p className="mt-1 text-sm text-text-muted">
                       About {Math.round(step.durationSeconds / 60) || 1} min
                     </p>
                   )}

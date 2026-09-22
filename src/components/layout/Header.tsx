@@ -26,7 +26,7 @@ export function Header() {
     <>
       <header
         className={cn(
-          'bg-page/85 border-border safe-top sticky top-0 z-40 border-b backdrop-blur-md',
+          'safe-top sticky top-0 z-40 border-b border-border bg-page/85 backdrop-blur-md',
         )}
       >
         <div className="content-container flex h-16 items-center justify-between gap-4">
@@ -48,8 +48,8 @@ export function Header() {
                         'relative inline-flex h-11 items-center rounded-md px-4 text-[0.9375rem] transition-colors duration-150',
                         '',
                         isActive
-                          ? 'text-accent-text font-semibold'
-                          : 'text-text-secondary hover:text-text hover:bg-sunken font-medium',
+                          ? 'font-semibold text-accent-text'
+                          : 'font-medium text-text-secondary hover:bg-sunken hover:text-text',
                       )}
                     >
                       {item.label}
@@ -57,7 +57,7 @@ export function Header() {
                       <span
                         aria-hidden
                         className={cn(
-                          'bg-accent-line absolute inset-x-4 bottom-1.5 h-0.5 rounded-full transition-opacity duration-200',
+                          'absolute inset-x-4 bottom-1.5 h-0.5 rounded-full bg-accent-line transition-opacity duration-200',
                           isActive ? 'opacity-100' : 'opacity-0',
                         )}
                       />
@@ -108,8 +108,8 @@ export function Header() {
                   className={cn(
                     'flex min-h-12 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors',
                     isActive
-                      ? 'bg-accent-soft text-accent-text font-semibold'
-                      : 'text-text-secondary hover:bg-sunken font-medium',
+                      ? 'bg-accent-soft font-semibold text-accent-text'
+                      : 'font-medium text-text-secondary hover:bg-sunken',
                   )}
                 >
                   <Icon aria-hidden className="size-5" />
