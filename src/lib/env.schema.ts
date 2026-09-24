@@ -54,9 +54,6 @@ export const envSchema = z.object({
 
   /** Server-only provider credentials used by the recipe image import job. */
   PEXELS_API_KEY: z.string().min(1).optional(),
-  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
-  CLOUDINARY_API_KEY: z.string().min(1).optional(),
-  CLOUDINARY_API_SECRET: z.string().min(1).optional(),
 
   /** Public site origin. Absolute URLs are required for canonicals and OG tags. */
   NEXT_PUBLIC_SITE_URL: z.string().min(1).url().default('http://localhost:3000'),

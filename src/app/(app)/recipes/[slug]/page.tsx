@@ -9,6 +9,21 @@ import type { Metadata } from 'next';
 import { SITE } from '@/lib/constants/site';
 import { IMAGE_SIZES } from '@/theme/tokens';
 
+/**
+ * Unknown slugs are a 404, not a render.
+ *
+ * Every recipe is known at build time, so a slug outside `generateStaticParams`
+ * is definitively not a recipe. Without this, Next renders such a URL on demand,
+ * hits `notFound()`, and then **prerenders and caches that result with a 200
+ * status and `s-maxage=31536000`** — a soft 404 that a crawler happily indexes
+ * as a real page, cached for a year. Observed: /recipes/not-a-real-drink
+ * returned `HTTP 200` with `x-nextjs-prerender: 1`.
+ *
+ * It also removes a free amplification vector: without it, any made-up URL costs
+ * a server render.
+ */
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return RECIPE_SEED.map((recipe) => ({ slug: recipe.slug }));
 }

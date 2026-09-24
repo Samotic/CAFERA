@@ -1,0 +1,127 @@
+{
+  "espresso": {
+    "image": "/images/coffee/espresso.avif",
+    "imageSquare": "/images/coffee/espresso-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAABQBQCdASoUABQAPu1qq1EppaOiqAqpMB2JZgC1F8bx/AIoDXMObTgKRRDbjDOooaccpwAA/u8/XaYbnKnWYRaRELjeDK2A4KEuhO4DI+9nmSF9Hyl2yep5YMW7dU7Vv9wfnjv9bNUlHxkGF1KGDM5YfVkjJVxofpCrgWq4DQhePKi6x139Gnz5wAAAAA=="
+  },
+  "ristretto": {
+    "image": "/images/coffee/ristretto.avif",
+    "imageSquare": "/images/coffee/ristretto-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRqgAAABXRUJQVlA4IJwAAACQBQCdASoUABQAPu1oqU+ppiOiKA1RMB2JQBYj2k3/wDzN5EpJ2LBFOqJd03R2riC8Zz2gAAD+6/AUWWASK0+zg8FeKtLTVl4GrYIuc2ReDeB2D8+68jfR+xUOjDQzA4scxIlUVr14UntnRtkfsdpjCCqt9oMYOa9VsMNnbU5akG6gVFkY94gsYBvptV8hsQHvDBqQ6qMPPFUAAAA="
+  },
+  "lungo": {
+    "image": "/images/coffee/lungo.avif",
+    "imageSquare": "/images/coffee/lungo-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAABQBQCdASoUABQAPu1qq1EppaOiqAqpMB2JZgC1F8bx/AIoDXMObTgKRRDbjDOooaccpwAA/u8/XaYbnKnWYRaRELjeDK2A4KEuhO4DI+9nmSF9Hyl2yep5YMW7dU7Vv9wfnjv9bNUlHxkGF1KGDM5YfVkjJVxofpCrgWq4DQhePKi6x139Gnz5wAAAAA=="
+  },
+  "americano": {
+    "image": "/images/coffee/americano.avif",
+    "imageSquare": "/images/coffee/americano-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRpYAAABXRUJQVlA4IIoAAACQBACdASoUABQAPu1srlIppaQiqAgBMB2JYgCw7BEcuu/pDmwyPX+kJBDcq8AA/vKepkl885TdMEjvk5h4CW9v2FJW9p+lgbTq8o3uIZc57YhwsLLrxGOGexK3yCYZJ8guj6yRAto2c+O3KUWfjfd0Q+K5DSMUTOd5GzqVYTvaIU+OA0vJKnAAAAA="
+  },
+  "long-black": {
+    "image": "/images/coffee/long-black.avif",
+    "imageSquare": "/images/coffee/long-black-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRsgAAABXRUJQVlA4ILwAAADwBACdASoUABQAPu1ur1KppiQiqAgBMB2JZwALAAFQ3Pkv4ENts4t3HlppPJap+gAA/tZH1/IMJX90FyBTjxQfaafQLFJHBalG43F1NB9lzp6GozM9vA+JrJZFhl+K0oBStHN9i2eQ3I9OuLvS6id+5uHti8PEBX29bcDGy4AVQfaZTg+LHAj0v/mWvFb3IkFGE6+ZFhC09eC04WLX/6gWfp/F//SDA+ST9NxS5CEa86g+G7eQE4R4Q24AAA=="
+  },
+  "cappuccino": {
+    "image": "/images/coffee/cappuccino.avif",
+    "imageSquare": "/images/coffee/cappuccino-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRsIAAABXRUJQVlA4ILYAAAAwBQCdASoUABQAPu1sqlGppaOiqAqpMB2JbACdMoR+MPvA3qv3Jsen8K4A+stWqYOJUAD9zHFn5/IDREWu+7j6kgl5wd+KhU2l6tZw5NcClsuUiROdxvLppTqGubarSe2bwSHU4NXZ6mhTb4L9jsI4E+JDwd1u4IeU+HPgkxFnP27pa9NRttwOBW67E03Dcbcs3zZpza/dRT7ERVeeuluEgd9yXR86t3G+N/WpJRCENC5f6OwAAA=="
+  },
+  "flat-white": {
+    "image": "/images/coffee/flat-white.avif",
+    "imageSquare": "/images/coffee/flat-white-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRoYAAABXRUJQVlA4IHoAAADQBACdASoUABQAPu1urlIppiQiqAgBMB2JYwCxHzlBo+Bf7NDl87g8tvgI3YvcAAD+WDM5Sr338Qdmi0wlU2dQd5uCOJ0/6dWvgHqCclLwtr3H970M2sUpOMxuIiJq+5MEMKsHCLYHxMx/VS07Bwx+z5K5QPjtg9AAAA=="
+  },
+  "cafe-latte": {
+    "image": "/images/coffee/cafe-latte.avif",
+    "imageSquare": "/images/coffee/cafe-latte-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRuIAAABXRUJQVlA4INYAAADQBQCdASoUABQAPu1sq1EppaOiqAqpMB2JbACdMzL9u0ic0eJM2ea7NzReT6N6GJX1dBstHOYAAP7qVEARBcYt7a/NtL+R5dcEbWhJsU9eiLN10hCdFPFJ65nnYBKogmMLxx2YqxKANue9We9+tXUeLM4OPmcpqM9JXgieKTzqPwZcaFxFNliiU9tYWe2w8rNBIr6kqUKHThu9+8CtjHzYYPVNjthrZFGH/gCbSXGgylXOPyO+e+8VOOlrIj6eURtCWJcBEuGbog2UaMvSpGvuyr8nwSAA"
+  },
+  "cortado": {
+    "image": "/images/coffee/cortado.avif",
+    "imageSquare": "/images/coffee/cortado-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRpIAAABXRUJQVlA4IIYAAABwBQCdASoUABQAPu1oqU+ppiOiKA1RMB2JaACsMyX86BTj/gRWIT8Qe9JlrrX3bgA0gFEAAP7uhY1CfcLi/S0xh6FFXh5yrtvtM+u4SAMcLUH1qcHzhJhqtGLmo57B0GOd/yUFeGlEtSucywjYiAyaEcCv8IQwTVY1t9EywN8tQuuB1O4AAA=="
+  },
+  "mocha": {
+    "image": "/images/coffee/mocha.avif",
+    "imageSquare": "/images/coffee/mocha-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRuAAAABXRUJQVlA4INQAAABwBQCdASoUABQAPu1wsFKppiSiqAgBMB2JZgCsMoMnr0nI7tVKD7WglYJtdzfDK+jL7uIoAP39NCOSLwZirNd6rgU2sZtDBCLBSHs6TRWkOiI+RptenXVmipdnIOAo/ecs8JeG37Gg5Bk97zZ2YDiQtOvM24MciDgD6jtNf8xqMd7v4tKVfaT53qHAeLN+QMRshgW+fjv3E9th7m9LuOM6vwrPxkAXZw5T0Wmw8NBwOERP4UAHrbpBFTR+gsR3e6U829Ll/3ajaO0FDwszvjxVj/woAA=="
+  },
+  "macchiato": {
+    "image": "/images/coffee/macchiato.avif",
+    "imageSquare": "/images/coffee/macchiato-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRrwAAABXRUJQVlA4ILAAAAAQBQCdASoUABQAPu1ur1IppiQiqAgBMB2JYwC7IQdBcvyaxqIYiGLqne/eL3sWoAGgAN+3YZAp+eXoyY0oWp5KsVIV/yZJxHUp2/bfGOATr8ZJ8WQm5BlUmAtAl1qodiTr4sMHToTjCilTiLKgez81yITOJaiVbwwQmmaFsn7v5fZADUAM5dJxz8+Hc/GkKdX+keF1Wus9VcmyKjwlqNWC0maxwvtlbZhQ4AZXIAAAAA=="
+  },
+  "affogato": {
+    "image": "/images/coffee/affogato.avif",
+    "imageSquare": "/images/coffee/affogato-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAADQBACdASoUABQAPu1qq1EppaOiqAqpMB2JYwAALnVZa9zu26Kp7GKmr7ryYdncAAD+9Bsg02vm3VXLiapp5GDqQ4oRK6m9KBxbH+oY2QbloYOX7++SOqm8I/q+aoWhgnyALMcAAAA="
+  },
+  "iced-latte": {
+    "image": "/images/coffee/iced-latte.avif",
+    "imageSquare": "/images/coffee/iced-latte-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAABwAwCdASoUABQAPu1urlIppiQiqAgBMB2JZwDKAAuw5omZxYAA+0ID16+vjVz3GQ2slEZgiEjn/x2JuAWqFdHfR247B02cCuYCw0mgAAA="
+  },
+  "cold-brew": {
+    "image": "/images/coffee/cold-brew.avif",
+    "imageSquare": "/images/coffee/cold-brew-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRo4AAABXRUJQVlA4IIIAAABQBACdASoUABQAPu1krE+ppSQiMBgIATAdiWMAxNgQ95tSHl0GNg9I8scwAP7vxG5DLIOFAomPKWJEg0r7b6nP47Yhv9eRAkGxklX9ZMFz+yNHyzl0GLZUHRC26izFNx+qkRShUOXkus6Bhs0Pdf7LHEXpyg85NuurPRhhMjLAAAAA"
+  },
+  "cold-brew-tonic": {
+    "image": "/images/coffee/cold-brew-tonic.avif",
+    "imageSquare": "/images/coffee/cold-brew-tonic-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRtQAAABXRUJQVlA4IMgAAADwBACdASoUABQAPu1urlIppiQiqAgBMB2JQBYdsZtH8nkgI1r3s/L+U3Qzg7I+6QgA/o4TiwR+f3UFKy7/kExEI0H9NthFVj9UyWYcea0EfC3qXhPTocZK3P+VvL7z6Cmmn3dX55qitNh3UIFUErWOcQ2N+gLybdaH6re9w2KZh6Ww6nlV02WjsKjGdjUyN7fpQ+hEAV8AMByF8wNlS5reV4GEVUxofPJxwR31gzIov/PI+WDfSoagMOrVNmex8vGlzHA6kAAAAA=="
+  },
+  "vietnamese-iced-coffee": {
+    "image": "/images/coffee/vietnamese-iced-coffee.avif",
+    "imageSquare": "/images/coffee/vietnamese-iced-coffee-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRpQAAABXRUJQVlA4IIgAAACwBACdASoUABQAPu1ur1IppiQiqAgBMB2JQBYdgZD4GeFhC/2O+bOkrjMvKdjAAP7NxzYNlo68r/KR4NP0N6e1r9f72wmMMqUWC43YTHkIF7XUuONohpyWbjlGRdKEIN0z88L9WQgqJGWPkmfMgj0N60LEnrlAvGcCybkWTVl8+UnypQhwggAA"
+  },
+  "dalgona-coffee": {
+    "image": "/images/coffee/dalgona-coffee.avif",
+    "imageSquare": "/images/coffee/dalgona-coffee-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRpYAAABXRUJQVlA4IIoAAADwBACdASoUABQAPu1eqk2ppKQiMBgMATAdiWUAygAPRusC/nZmPBV1SSI595fIqkAA/rMubC+U9kzN3dfOT+poKGJe0fae8LNDAO8GHTSgC31p2rroqUOFMOn84GA+Owlj9pBdzTYU+cKQg9TWPe66/xy5r2vAxy0ZIK3xV4ctEoGP6RWNhfxzeAA="
+  },
+  "frappe": {
+    "image": "/images/coffee/frappe.avif",
+    "imageSquare": "/images/coffee/frappe-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRpIAAABXRUJQVlA4IIYAAACwBACdASoUABQAPu1ur1IppiQiqAgBMB2JYgC7AAyMgrclebWzwLiDuWl0ERAAAP6NI0z3wMXVkR+JsoQWXMuPSXneDZOfu46Npz6aLWFCa+YJ/Qp2zk2igtend1rHP1ywP1bP0wHDOlbUbkk8A9p6qqwY57YO8i4PJgX+biTpEg5IBN6AAA=="
+  },
+  "french-press": {
+    "image": "/images/coffee/french-press.avif",
+    "imageSquare": "/images/coffee/french-press-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRtoAAABXRUJQVlA4IM4AAACQBQCdASoUABQAPu1wsFIppiSiqAgBMB2JQBihUGXYEz5/8A7pPKhfwt5k3gvo0sGOuYq74AD9uyAnmMKBsbicnzUFug5sCxkue7KHmHQ/87P6fF2SACOuHKMpjWOXVRKYAQhna/V6NRYcxGRl53Gbi8eHPy+pz3iVB6zOFg5KHQABAHu89ufbm0h451bsccO3zRtPoIBOhRPYidt1rLo6Xn/5z+r8bURu4w3YWToQIg4ApxVF8DIor63xpCBU0ltH50ezeySy0EPXbgAAAA=="
+  },
+  "v60-pour-over": {
+    "image": "/images/coffee/v60-pour-over.avif",
+    "imageSquare": "/images/coffee/v60-pour-over-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRs4AAABXRUJQVlA4IMIAAAAQBQCdASoUABQAPu1wsFKppiSiqAgBMB2JYgCdAA+0E6kJ6JXk48Fn8z1kcsh00KPAAP6saBRDlD7+yeHdC0MkubxGy/MP1X3FYgHYt+oy276UOqesKQ0l0uJyEJYztaxoVWjlLFJCLyE7S6E4SjWfaPGJUyqaRyIAOXygd6g/QDINsFqRZI7s54WsNErf0qSNkTxd8GPBTIlbcmCcGIXnSJMw7ToW4nnVkTxL76Uz02993/T9r1LuCw0agc6laMwAAA=="
+  },
+  "chemex": {
+    "image": "/images/coffee/chemex.avif",
+    "imageSquare": "/images/coffee/chemex-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRrAAAABXRUJQVlA4IKQAAAAQBQCdASoUABQAPu1oqU+ppaOiKA1RMB2JQBXDgfBWnPy0UINg220uzkR8ga3M1WkAAP3SRVQ6SzyuBSPtBM9zLdbIdU7G+kbB7IgX1AthWlXC2bJedOSa7TNsPreXlwOenhYhcIgB3zVT12BsyR8mw3ypVrdND+WHRU5aa0/9R6xc6+vT3O4eAX/ry5nMzoVRvDHdS3X3poQdFMoJuyL6WAAAAA=="
+  },
+  "turkish-coffee": {
+    "image": "/images/coffee/turkish-coffee.avif",
+    "imageSquare": "/images/coffee/turkish-coffee-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRqYAAABXRUJQVlA4IJoAAACQBACdASoUABQAPu1ur1IppiQiqAgBMB2JQBf9gabSIk05POy9DbV9wm3F5gAA/s8qBc+WarmjwerdChDp//ffiJE52pXdLcMKCi7V+At1UggQS6plV5/ewM0cCXFQR0gi3Ft/xEqPddJ03YNEB4nvLJKFT7DwJVfmoDp9CFbpSDfT7RC6HI93FQ+K1LkR8S530mM/yKwXUAAA"
+  },
+  "cafe-de-olla": {
+    "image": "/images/coffee/cafe-de-olla.avif",
+    "imageSquare": "/images/coffee/cafe-de-olla-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRtIAAABXRUJQVlA4IMYAAAAwBgCdASoUABQAPu1ur1IppiQiqAgBMB2JYgCxH04gA5/8WwwdAIFgUzZeFbaXs2LRFSPgMHf9E0AAAM42g3SS93UV4VIhPSV5g0OiqNoJ6exXHCWfjRJtaATBMTKzHnC5QYi873MU4i6P3C7+zFaTs9Vc1l6/GSntxRc90ivod+hnPI3Q+c0v2ZDb6z9iCzoFpb0iwRmBkKM0qmmLqiw8vEt+4h5Y+5ywt3zdK7B/gu8GH0j1F17k1zMaDTn8+mWHTLAAAAA="
+  },
+  "vietnamese-egg-coffee": {
+    "image": "/images/coffee/vietnamese-egg-coffee.avif",
+    "imageSquare": "/images/coffee/vietnamese-egg-coffee-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRs4AAABXRUJQVlA4IMIAAABwBQCdASoUABQAPu1urlIppiQiqAgBMB2JZgCdOUFVYPl0MCipLqThNLwTEJ5WB8k+Hv+AAP7ZWsCGVznsfMNmcKA8holyWPX1rqd8lOA1Qp14ftXrcBZyy9whubmTlnc13uqxe+nTpPf5TYzybz0eN7naSdyw9+4KC3G69fkvDDLZfTnQZWLMHdgebqehtirHxwb6pOWjku6yQj6LnG7+nDDB3NHFqP6W3kFg9jpSaXIBiD/E3zM8HzjnM3bu9rAAAA=="
+  },
+  "irish-coffee": {
+    "image": "/images/coffee/irish-coffee.avif",
+    "imageSquare": "/images/coffee/irish-coffee-square.avif",
+    "blurDataURL": "data:image/webp;base64,UklGRqAAAABXRUJQVlA4IJQAAADwBACdASoUABQAPu1qrVCppaQiqAqpMB2JaAC7ABEl7Iz7C7x0FSEskHsF957bNIAA/vQx/vqIl3BDb57AaQkIuy/nlE+pnM0ogCqP6v1CfrYhbRFb6U3qkG0HoXGUG13ggsnV8NJVzA7iddf4HGVJ2rix7ZZFH616+w5MxVOrPG0OScKvclRt4Au3C4Ki2kh83BwA"
+  }
+}

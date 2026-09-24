@@ -5,7 +5,7 @@
   "description": "CAFERA — Discover. Brew. Enjoy. A premium coffee discovery and recipe platform.",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run assert:images && next build",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -19,7 +19,9 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,css,md}\"",
     "scan:secrets": "node scripts/check-bundle-secrets.mjs",
     "images:import": "node --env-file=.env scripts/import-recipe-images.mjs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "images:build": "node scripts/build-recipe-images.mjs",
+    "assert:images": "node scripts/assert-recipe-images.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -59,6 +61,7 @@
     "lint-staged": "^15.4.3",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8.46.4",

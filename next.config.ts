@@ -8,22 +8,20 @@ import {
 } from './src/lib/security-headers';
 
 /**
- * Remote image hosts.
+ * Images.
  *
- * next/image refuses any origin not listed here, which doubles as a content
- * allow-list: a compromised recipe record cannot point the browser at an
- * arbitrary host.
+ * `remotePatterns` is deliberately **empty**, and must stay that way. Every
+ * photograph is a committed asset under `public/images/coffee/`, so nothing the
+ * application renders should ever come from another origin.
  *
- * Cloudinary is listed **unconditionally**, and that is the fix for a real bug.
- * It used to be gated on `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, which nothing
- * sets — so `next/image` rejected every recipe photograph at runtime, and the
- * components had been switched to a raw `<img>` to work around it. That quietly
- * gave up AVIF/WebP conversion, responsive `srcset` and lazy loading on the
- * largest asset of every page.
+ * That is not only a supply-chain preference. It is what lets `img-src` in the
+ * CSP be `'self'` alone, and it removes a runtime dependency on a service that
+ * can rate-limit, change its URL scheme, or disappear. v3 has no backend and no
+ * uploads, so a third-party image host bought nothing.
  *
- * Gating it bought nothing in the first place: a cloud name is not a secret, it
- * appears in full in every image URL the browser already downloads. This is
- * still one named host, not a wildcard.
+ * An empty list is also the enforcement: `next/image` refuses any origin not
+ * named here, so a recipe record that somehow acquired a remote URL fails
+ * loudly rather than quietly reaching the network.
  */
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -34,10 +32,7 @@ const nextConfig: NextConfig = {
     // Matches the layout breakpoints in theme/tokens.ts.
     deviceSizes: [360, 480, 640, 768, 1024, 1280, 1536, 1920],
     imageSizes: [64, 96, 128, 192, 256, 384],
-    remotePatterns: [
-      { protocol: 'https' as const, hostname: 'images.unsplash.com' },
-      { protocol: 'https' as const, hostname: 'res.cloudinary.com' },
-    ],
+    remotePatterns: [],
   },
 
   /* No `rewrites()`. It existed only to proxy /api/* to the separate Express

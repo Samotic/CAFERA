@@ -158,16 +158,12 @@ export function buildCsp({ isDev, isSecure }: { isDev: boolean; isSecure: boolea
     ],
     'style-src': ["'self'", "'unsafe-inline'"],
     'style-src-attr': ["'unsafe-inline'"],
-    /* Curated recipe photography is currently served from Unsplash. Keep the
-       host explicit; arbitrary remote image origins remain blocked. */
-    'img-src': [
-      "'self'",
-      'data:',
-      'blob:',
-      'https://*.public.blob.vercel-storage.com',
-      'https://images.unsplash.com',
-      'https://res.cloudinary.com',
-    ],
+    /* No remote image origins. Every photograph is a committed local asset
+       under public/images/coffee/, so `'self'` covers all of it.
+
+       `data:` stays for the inline blur placeholders; `blob:` stays for
+       client-side crop previews. Neither reaches the network. */
+    'img-src': ["'self'", 'data:', 'blob:'],
     'font-src': ["'self'", 'data:'],
     'connect-src': ["'self'", ...(isDev ? ['ws:', 'wss:'] : [])],
     'media-src': ["'self'"],

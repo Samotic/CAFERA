@@ -1,15 +1,13 @@
 import type { Recipe } from '@/types/recipe';
 import type { Category } from '@/lib/constants/categories';
 import type { Difficulty, Strength, Temperature } from '@/lib/constants/enums';
-import { GENERATED_RECIPE_IMAGES } from './recipe-images.generated';
+import { slugify } from '@/lib/utils/slug';
+import { GENERATED_RECIPE_IMAGES, type RecipeImageSet } from './recipe-images.generated';
 
-const images = [
-  'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=85',
-  'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=85',
-  'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=1200&q=85',
-  'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=1200&q=85',
-  'https://images.unsplash.com/photo-1512568400610-62da28bc8a13?auto=format&fit=crop&w=1200&q=85',
-] as const;
+/* The Unsplash fallback array that used to live here is gone with the rest of
+   the remote imagery. Every photograph is now a committed local asset, so there
+   is nothing to fall back *to* — and a fallback that silently substitutes an
+   unrelated cup is worse than a build failure. */
 
 type RecipeSeed = Pick<
   Recipe,
@@ -356,10 +354,12 @@ const seeds: RecipeSeed[] = seedRows.map(
   ]) =>
     ({
       name,
-      slug: name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, ''),
+      /* The shared slugify, not a local regex. An inline
+         `.replace(/[^a-z0-9]+/g, '-')` drops diacritics entirely rather than
+         folding them: "Café Latte" became `caf-latte`, "Frappé" became `frapp`.
+         Those slugs matched no image and no canonical URL, and the old remote
+         fallback hid it by serving an unrelated photograph. */
+      slug: slugify(name),
       description: `A carefully balanced ${name.toLowerCase()} with a clear method, honest ratios, and room to make it yours.`,
       category,
       temperature,
@@ -379,11 +379,38 @@ const seeds: RecipeSeed[] = seedRows.map(
     }) as RecipeSeed,
 );
 
+/**
+ * Image set for a slug.
+ *
+ * Throws rather than falling back. A recipe whose photography is missing is a
+ * content bug that should stop the build, not one that ships a plausible-looking
+ * wrong picture and is noticed months later by a reader who knows what a cortado
+ * is meant to look like.
+ */
+function recipeImages(slug: string): RecipeImageSet {
+  const set = GENERATED_RECIPE_IMAGES[slug];
+  if (!set) {
+    throw new Error(
+      `No imagery for recipe "${slug}". Run \`npm run images:build\` to regenerate public/images/coffee/.`,
+    );
+  }
+  return set;
+}
+
 export const RECIPE_SEED: Recipe[] = seeds.map((recipe, index) => ({
   ...recipe,
-  image: GENERATED_RECIPE_IMAGES[recipe.slug] ?? images[index % images.length]!,
-  imageSquare: GENERATED_RECIPE_IMAGES[recipe.slug] ?? images[index % images.length]!,
-  blurDataURL: '',
+  /**
+   * Local, committed assets. The two crops are generated independently from the
+   * source rather than derived from each other — a square letterboxed out of a
+   * 16:9 would show bars on a grid card, and one centre-cropped from it would
+   * cut the cup in half as often as not.
+   *
+   * There is no remote fallback on purpose. A missing entry here should fail the
+   * build (see `assertRecipeImagesExist`), not silently show the wrong drink.
+   */
+  image: recipeImages(recipe.slug).image,
+  imageSquare: recipeImages(recipe.slug).imageSquare,
+  blurDataURL: recipeImages(recipe.slug).blurDataURL,
   rating: 4.2 + ((index * 7) % 8) / 10,
   reviewCount: 18 + index * 7,
   popularity: 100 - index,
