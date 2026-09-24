@@ -12,34 +12,31 @@ import {
  *
  * next/image refuses any origin not listed here, which doubles as a content
  * allow-list: a compromised recipe record cannot point the browser at an
- * arbitrary host. Seeded recipe photography is served from /public; only
- * user-uploaded media travels through Cloudinary.
+ * arbitrary host.
+ *
+ * Cloudinary is listed **unconditionally**, and that is the fix for a real bug.
+ * It used to be gated on `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, which nothing
+ * sets — so `next/image` rejected every recipe photograph at runtime, and the
+ * components had been switched to a raw `<img>` to work around it. That quietly
+ * gave up AVIF/WebP conversion, responsive `srcset` and lazy loading on the
+ * largest asset of every page.
+ *
+ * Gating it bought nothing in the first place: a cloud name is not a secret, it
+ * appears in full in every image URL the browser already downloads. This is
+ * still one named host, not a wildcard.
  */
-const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
   images: {
     formats: ['image/avif', 'image/webp'],
-    // Matches the layout breakpoints in theme/breakpoints.ts.
+    // Matches the layout breakpoints in theme/tokens.ts.
     deviceSizes: [360, 480, 640, 768, 1024, 1280, 1536, 1920],
     imageSizes: [64, 96, 128, 192, 256, 384],
     remotePatterns: [
-      {
-        protocol: 'https' as const,
-        hostname: 'images.unsplash.com',
-      },
-      ...(cloudinaryCloudName
-        ? [
-            {
-              protocol: 'https' as const,
-              hostname: 'res.cloudinary.com',
-              pathname: `/${cloudinaryCloudName}/**`,
-            },
-          ]
-        : []),
+      { protocol: 'https' as const, hostname: 'images.unsplash.com' },
+      { protocol: 'https' as const, hostname: 'res.cloudinary.com' },
     ],
   },
 

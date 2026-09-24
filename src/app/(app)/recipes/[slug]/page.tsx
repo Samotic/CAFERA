@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Clock3, MapPin, Play, Scale } from 'lucide-react';
 import { RECIPE_SEED } from '@/lib/seed/recipes';
 import { RatingDisplay } from '@/components/ui/Rating';
 import { ButtonLink } from '@/components/ui/Button';
 import type { Metadata } from 'next';
 import { SITE } from '@/lib/constants/site';
+import { IMAGE_SIZES } from '@/theme/tokens';
 
 export function generateStaticParams() {
   return RECIPE_SEED.map((recipe) => ({ slug: recipe.slug }));
@@ -78,11 +80,21 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
         </Link>
       </div>
       <div className="content-container grid gap-10 pb-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-16">
-        <div className="overflow-hidden rounded-card bg-sunken">
-          <img
+        {/* The hero is the LCP element on this page, so it is marked `priority`
+            — it must not be lazy-loaded or queued behind anything else. The
+            aspect ratio lives on the wrapper so the box is reserved before the
+            photograph arrives. */}
+        <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-sunken">
+          <Image
             src={recipe.image}
             alt={recipe.name}
-            className="aspect-[4/3] h-full w-full object-cover"
+            fill
+            priority
+            sizes={IMAGE_SIZES.hero}
+            className="object-cover"
+            {...(recipe.blurDataURL
+              ? { placeholder: 'blur' as const, blurDataURL: recipe.blurDataURL }
+              : {})}
           />
         </div>
         <div className="lg:pt-8">

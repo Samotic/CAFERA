@@ -1,6 +1,8 @@
+import Image from 'next/image';
 import { Clock3, MapPin } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/constants/categories';
 import { DIFFICULTY_LABELS } from '@/lib/constants/enums';
+import { IMAGE_SIZES } from '@/theme/tokens';
 import type { Recipe } from '@/types/recipe';
 import { CardLink, CardBody, CardDescription, CardTitle } from '@/components/ui/Card';
 import { RatingDisplay } from '@/components/ui/Rating';
@@ -8,11 +10,21 @@ import { RatingDisplay } from '@/components/ui/Rating';
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <CardLink href={`/recipes/${recipe.slug}`} className="h-full">
-      <div className="aspect-[4/3] overflow-hidden bg-sunken">
-        <img
+      {/* The aspect ratio is on the wrapper and `fill` on the image, so the box
+          is reserved before the photograph arrives. This is what keeps CLS at
+          zero on a grid that loads twenty of them at once. */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-sunken">
+        <Image
           src={recipe.imageSquare}
           alt=""
-          className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
+          fill
+          /* Without `sizes`, next/image assumes 100vw and ships a full-width
+             source to a card that is a quarter of the viewport. */
+          sizes={IMAGE_SIZES.grid}
+          className="object-cover transition duration-500 group-hover/card:scale-105"
+          {...(recipe.blurDataURL
+            ? { placeholder: 'blur' as const, blurDataURL: recipe.blurDataURL }
+            : {})}
         />
       </div>
       <CardBody>
