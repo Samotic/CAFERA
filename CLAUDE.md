@@ -280,6 +280,39 @@ Everything deleted is recoverable at tag **`v1-express-final`**.
 Tests: 200 → 198. Removed 31 Express tests (app 10, csrf 15, health 6) and 13
 nonce-guard tests; added 42 (env 9, db 8, security-headers 25).
 
+## Regenerating package-lock.json
+
+**Use npm 11.20.0 or newer, and delete `node_modules` first.**
+
+```bash
+rm -rf node_modules package-lock.json
+npx npm@11.20.0 install
+```
+
+Two separate failures come from getting this wrong, and both are invisible on
+Windows while breaking Linux CI at `npm ci` in about fifteen seconds:
+
+1. **Regenerating with `node_modules` present** makes npm read the existing tree
+   instead of re-resolving, so it records only the _host platform's_ optional
+   binaries. `@tailwindcss/oxide` declared 12 platform packages and the lockfile
+   held 1. Linux CI then cannot find
+   `tailwindcss-oxide.linux-x64-gnu.node` and the build dies.
+
+2. **npm 11.5.1 writes lockfiles it then rejects.** After a full clean install it
+   omitted nested duplicate versions — `ajv@6.15.0` under both `eslint` and
+   `@eslint/eslintrc` — and its own `npm ci` failed with
+   `Missing: ajv@6.15.0 from lock file`. npm 11.20.0 records all three copies.
+
+Do **not** patch around this by pinning individual platform binaries in
+`optionalDependencies` or forcing versions through `overrides`. That was tried
+three times (rolldown, then lightningcss, then oxide would have been next); each
+pin fixes one package and leaves the cause in place, and the rolldown pins
+froze 1.2.9 while the tree had moved to 1.2.11. A correctly generated lockfile
+carries **54 linux packages** and needs no pins at all.
+
+CI is the check that catches this — it runs `npm ci` on Linux, which is the only
+place the gap is visible.
+
 ## Verify, don't assume
 
 The standard is _"do not claim functionality works without testing it."_ Run it
