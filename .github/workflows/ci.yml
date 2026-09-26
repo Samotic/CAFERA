@@ -24,11 +24,14 @@ jobs:
   # with --no-verify in any case. CI is the copy that cannot be skipped.
   verify:
     name: Typecheck, lint, test, build
-    runs-on: ubuntu-latest
+    # Pinned rather than `ubuntu-latest`. That label migrates to Ubuntu 26 on
+    # 19 October 2026, and a runner image changing underneath a green pipeline
+    # is exactly the kind of surprise that costs a morning. Bump it deliberately.
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -71,7 +74,7 @@ jobs:
           MONGODB_URI: mongodb://127.0.0.1:27017/cafera_ci
           NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
@@ -80,10 +83,10 @@ jobs:
 
   audit:
     name: Dependency audit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
