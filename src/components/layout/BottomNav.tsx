@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/cn';
+import { prefetchFor } from '@/lib/prefetch';
 import { isNavItemActive, NAV_ITEMS } from './nav-items';
 
 /**
@@ -37,6 +38,8 @@ export function BottomNav() {
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
+                /* Private destinations are not prefetched; see prefetchFor. */
+                prefetch={prefetchFor(item.href)}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   'relative flex min-h-[3.5rem] flex-col items-center justify-center gap-1 px-1 py-2',

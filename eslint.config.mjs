@@ -86,6 +86,31 @@ const eslintConfig = defineConfig([
     rules: { 'no-console': 'off', 'no-restricted-properties': 'off' },
   },
 
+  {
+    /**
+     * The service worker runs in a worker global scope, not a window — `self`,
+     * `caches` and `clients` are globals there and undefined everywhere else.
+     *
+     * Declared here rather than with an `/* eslint-env serviceworker *\/`
+     * comment: flat config ignores those, and ESLint 10 will report them as
+     * errors. The comment form also lints clean today, which is the trap — it
+     * silently does nothing while looking like it configured something.
+     */
+    files: ['public/sw.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: {
+        self: 'readonly',
+        caches: 'readonly',
+        clients: 'readonly',
+        fetch: 'readonly',
+        Response: 'readonly',
+        Request: 'readonly',
+        URL: 'readonly',
+      },
+    },
+  },
+
   globalIgnores([
     '.next/**',
     'out/**',

@@ -4,7 +4,7 @@ import { CATEGORY_META } from '@/lib/constants/categories';
 
 /**
  * The footer carries the links a crawler needs and a returning visitor expects:
- * category entry points, the legal pages that Cloudinary and analytics require,
+ * category entry points, the legal pages that analytics and consent require,
  * and the brand statement. It is hidden behind the bottom nav on mobile, so it
  * gets clearance padding there.
  */

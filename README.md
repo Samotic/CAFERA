@@ -375,7 +375,7 @@ bug. See `src/lib/db.ts`.
 
 Real `NEXT_PUBLIC_SITE_URL` · custom domain with HTTPS and HSTS · `robots.txt`
 and a dynamic `sitemap.xml` · structured data validated in Google's Rich Results
-Test · PWA manifest and offline fallback · error tracking · analytics behind a
+Test · ~~PWA manifest and offline fallback~~ (done) · error tracking · analytics behind a
 consent banner · Privacy Policy and Terms pages · Atlas backups enabled.
 
 > **TTFB baseline: not yet measured.** The four-number breakdown (edge TTFB, Next

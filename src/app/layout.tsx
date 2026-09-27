@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { ThemeScript } from '@/components/theme/ThemeScript';
+import { ServiceWorkerRegistration } from '@/components/pwa/ServiceWorkerRegistration';
 import { SITE } from '@/lib/constants/site';
+import { isProduction } from '@/lib/env';
 import { fontVariables } from '@/theme/fonts';
 import './globals.css';
 
@@ -65,6 +67,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
         {children}
+        {/* The flag is resolved on the server so the client never reads
+            process.env. In development the component unregisters instead. */}
+        <ServiceWorkerRegistration enabled={isProduction} />
       </body>
     </html>
   );

@@ -8,6 +8,7 @@ import { Logo } from '@/components/brand/Logo';
 import { ButtonLink, IconButton } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
 import { cn } from '@/lib/cn';
+import { prefetchFor } from '@/lib/prefetch';
 import { isNavItemActive, NAV_ITEMS } from './nav-items';
 
 /**
@@ -43,6 +44,8 @@ export function Header() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
+                      /* Private destinations are not prefetched; see prefetchFor. */
+                      prefetch={prefetchFor(item.href)}
                       aria-current={isActive ? 'page' : undefined}
                       className={cn(
                         'relative inline-flex h-11 items-center rounded-md px-4 text-[0.9375rem] transition-colors duration-150',
@@ -103,6 +106,7 @@ export function Header() {
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  prefetch={prefetchFor(item.href)}
                   onClick={() => setIsMenuOpen(false)}
                   aria-current={isActive ? 'page' : undefined}
                   className={cn(

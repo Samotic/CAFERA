@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { forwardRef } from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { hrefPathname, prefetchFor } from '@/lib/prefetch';
 
 /**
  * The one button in CAFERA.
@@ -114,8 +115,33 @@ export interface ButtonLinkProps extends React.ComponentPropsWithoutRef<typeof L
  * middle-clickable, copyable and openable in a new tab, none of which a
  * `<button onClick={router.push}>` supports.
  */
-export function ButtonLink({ variant, size, fullWidth, className, ...props }: ButtonLinkProps) {
-  return <Link className={buttonStyles({ variant, size, fullWidth, className })} {...props} />;
+export function ButtonLink({
+  variant,
+  size,
+  fullWidth,
+  className,
+  prefetch,
+  ...props
+}: ButtonLinkProps) {
+  return (
+    <Link
+      /**
+       * A private destination is not prefetched unless the caller insists.
+       *
+       * Centralised here rather than repeated at each call site for the reason
+       * the nav does the same thing: the home page's "Create account" button was
+       * prefetching `/register` on every visit, and that is the kind of thing
+       * nobody notices being reintroduced. A route answering
+       * `private, no-store` cannot produce a reusable prefetch, so the request
+       * buys nothing and spends bandwidth that the LCP element is waiting on.
+       *
+       * `??` and not `||`, so an explicit `prefetch={false}` is still honoured.
+       */
+      prefetch={prefetch ?? prefetchFor(hrefPathname(props.href))}
+      className={buttonStyles({ variant, size, fullWidth, className })}
+      {...props}
+    />
+  );
 }
 
 export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

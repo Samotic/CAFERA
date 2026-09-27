@@ -257,6 +257,61 @@ that cannot happen.
 file** — invisible in a diff, surviving copy-paste, caught only when something
 happened to lint that file.
 
+## 8. The service worker has no build step, and no precache manifest
+
+`public/sw.js` is a plain static file. The obvious alternative — a build plugin
+emitting a manifest of hashed chunks — has to be written _after_ `next build`
+but read _from_ `public/`, which Vercel uploads from the build. The window is
+wrong in both directions, and the failure is a worker that precaches URLs which
+404; `install` treats that as fatal, so the worker never activates and offline
+silently does nothing.
+
+Instead it discovers its own asset list: it fetches the pages it wants to serve
+offline, then reads the `/_next/static/...` and `/_next/image?...` URLs back out
+of that HTML. Whatever the build emitted is by definition what the HTML
+references. The page list comes from `/sitemap.xml`, which is already generated
+from `RECIPE_SEED`, so "every recipe" cannot drift from "every recipe cached".
+
+- `cache.addAll` is **not** used. It rejects the whole batch on one failure, and
+  a rejected install leaves the worker permanently unactivated. One missing
+  chunk should cost that chunk, not offline support.
+- Navigations are **network-first**. Cache-first would serve a stale recipe to
+  an online visitor; these pages are CDN-cached already, so the network path is
+  fast and the cache is the fallback.
+- `/_next/image` misses fall back to **any cached width of the same source**.
+  `next/image` picks a width from DPR and viewport, so the URL requested offline
+  is frequently not the one precached; without this the photograph is simply
+  absent.
+- Private routes are skipped by prefix **and** any response carrying `no-store`
+  or `private` is refused. Two checks, because the first is a list and lists go
+  stale. `src/lib/service-worker.test.ts` asserts the list still matches
+  `PRIVATE_ROUTE_PREFIXES`.
+
+Measured: 25/25 recipe pages plus `/` and `/discover` render styled with the
+network disabled, after a single load of `/`.
+
+## 9. `prefetch` policy is `false` or `undefined` — never `true`
+
+`src/lib/prefetch.ts` owns this, and the distinction is easy to get backwards:
+
+| value       | behaviour                                                                                 |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| `undefined` | static route prefetched in full; **dynamic** route only to the nearest `loading` boundary |
+| `true`      | full route prefetched **even when dynamic**                                               |
+| `false`     | never, on viewport or hover                                                               |
+
+So `prefetch={!isPrivate(href)}` is not "leave public links alone" — it is an
+upgrade from auto to full. `/discover` is dynamic, and that spelling turned its
+prefetch into a **28 KB** `text/x-component` response occupying 341-820 ms of a
+throttled mobile load of the home page. This was introduced and caught inside one
+session; `src/lib/prefetch.test.ts` asserts the public case is `undefined` and
+explicitly not `true`.
+
+Private routes get `false`: they answer `private, no-store` and render per
+session, so the payload is not reusable, and prefetching them pointed a
+signed-out visitor's browser at `/profile`, `/favorites`, `/my-cafe` and
+`/register` on every page load — eight requests per load of `/`, now zero.
+
 ---
 
 # What the serverless port deleted
